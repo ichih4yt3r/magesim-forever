@@ -22,6 +22,9 @@ enum ID : int
     CLEARCAST = 12536,
     MANA_TIDE = 39609,
     BERSERKING = 20554,
+    BLOOD_FURY = 20572,
+    READ_LEY_LINE = 100001,
+    EUREKA = 100002,
     MISSILE_BARRAGE = 44401,
     HOT_STREAK = 48108,
     FIRESTARTER = 54741,
@@ -220,6 +223,27 @@ class Berserking : public Buff
 
 public:
     Berserking();
+};
+
+class BloodFury : public Buff
+{
+
+public:
+    BloodFury();
+};
+
+class ReadLeyLine : public Buff
+{
+
+public:
+    ReadLeyLine();
+};
+
+class Eureka : public Buff
+{
+
+public:
+    Eureka();
 };
 
 class MissileBarrage : public Buff

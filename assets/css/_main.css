@@ -468,15 +468,26 @@ table {
 
         .sidebar {
             position: relative;
+            display: flex;
+            flex-direction: column;
             background: rgba(0,0,0,0.8);
-            padding: 30px 30px 360px;
+            padding: 30px 30px 130px;
             transition: background 0.2s ease;
 
+            .actions {
+                order: 1;
+            }
+
+            .ep-stats,
+            .no-result,
+            .result {
+                order: 2;
+            }
+
             .display-stats {
-                position: absolute;
-                left: 30px;
-                right: 30px;
-                bottom: 130px;
+                order: 3;
+                margin-top: auto;
+                padding-top: 20px;
 
                 td.active {
                     color: var(--color-primary);
@@ -967,6 +978,7 @@ table {
                                 &.neck .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_neck.jpg"); }
                                 &.shoulder .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_shoulder.jpg"); }
                                 &.chest .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_chest.jpg"); }
+                                &.back .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_shirt.jpg"); }
                                 &.wrist .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_wrists.jpg"); }
                                 &.hands .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_hands.jpg"); }
                                 &.waist .paperitem { background-image: url("https://wow.zamimg.com/images/wow/icons/large/inventoryslot_waist.jpg"); }
@@ -1505,10 +1517,10 @@ table {
 
             .main {
                 .tabs {
-                    background: #333 linear-gradient(90deg, rgba(98,0,255,0.2) 0%, rgba(151,5,199,0.2) 100%);
+                    background: #333 linear-gradient(90deg, rgba(63,199,235,0.2) 0%, rgba(63,199,235,0.2) 100%);
 
                     .tab {
-                        background: #150032;
+                        background: #3fc7eb;
                         opacity: 0.6;
 
                         &.active {
@@ -1517,7 +1529,7 @@ table {
                     }
                 }
                 .body {
-                    background: #000 linear-gradient(30deg, rgba(151,5,199,0.2) 0%, rgba(98,0,255,0.2) 50%, rgba(151,5,199,0.2) 100%);
+                    background: #000 linear-gradient(30deg, rgba(63,199,235,0.2) 0%, rgba(63,199,235,0.2) 50%, rgba(63,199,235,0.2) 100%);
                 }
             }
 
@@ -1528,7 +1540,7 @@ table {
 
         .lightbox {
             > .inner {
-                background: #000 linear-gradient(30deg, rgba(151,5,199,0.2) 0%, rgba(98,0,255,0.2) 50%, rgba(151,5,199,0.2) 100%);
+                background: #000 linear-gradient(30deg, rgba(63,199,235,0.2) 0%, rgba(63,199,235,0.2) 50%, rgba(63,199,235,0.2) 100%);
             }
         }
     }

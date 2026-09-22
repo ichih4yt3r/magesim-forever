@@ -29,7 +29,9 @@ enum Race : int
     RACE_GNOME,
     RACE_HUMAN,
     RACE_TROLL,
-    RACE_UNDEAD
+    RACE_UNDEAD,
+    RACE_SKYBORNE,
+    RACE_ORC,
 };
 
 enum Faction : int
@@ -50,7 +52,7 @@ enum School : int
     SCHOOL_HOLY,
 };
 
-enum MetaGem : int
+enum MetaGem : int //dead atm
 {
     META_NONE = 0,
     META_CHAOTIC_SKYFLARE = 41285,

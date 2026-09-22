@@ -124,7 +124,7 @@ namespace spell
     {
         ArcaneBarrage() : Spell(ARCANE_BARRAGE, "Arcane Barrage", SCHOOL_ARCANE)
         {
-            cost = 18;
+            cost = 7;
             min_dmg = 936;
             max_dmg = 1144;
             cast_time = 0;
@@ -137,9 +137,9 @@ namespace spell
     {
         ArcaneBlast() : Spell(ARCANE_BLAST, "Arcane Blast", SCHOOL_ARCANE)
         {
-            cost = 7;
-            min_dmg = 1185;
-            max_dmg = 1377;
+            cost = 15;
+            min_dmg = 364;
+            max_dmg = 424;
             cast_time = 2.5;
             coeff = 2.5/3.5;
         }
@@ -163,8 +163,8 @@ namespace spell
         ArcaneMissiles() : Spell(ARCANE_MISSILES, "Arcane Missiles", SCHOOL_ARCANE)
         {
             cost = 31;
-            min_dmg = 362;
-            max_dmg = 362;
+            min_dmg = 171;
+            max_dmg = 171;
             cast_time = 5;
             coeff = 5.0/3.5;
             channeling = true;
@@ -193,8 +193,8 @@ namespace spell
         Frostbolt() : Spell(FROSTBOLT, "Frostbolt", SCHOOL_FROST)
         {
             cost = 11;
-            min_dmg = 804;
-            max_dmg = 866;
+            min_dmg = 371;
+            max_dmg = 401;
             cast_time = 3;
             coeff = 3/3.5;
             speed = 28;
@@ -206,8 +206,8 @@ namespace spell
         Fireball() : Spell(FIREBALL, "Fireball", SCHOOL_FIRE)
         {
             cost = 19;
-            min_dmg = 898;
-            max_dmg = 1143;
+            min_dmg = 397;
+            max_dmg = 505;
             cast_time = 3.5;
             coeff = 1;
             speed = 24;
@@ -224,8 +224,8 @@ namespace spell
             coeff = 0;
             t_interval = 2;
             ticks = 4;
-            min_dmg = 29;
-            max_dmg = 29;
+            min_dmg = 14;
+            max_dmg = 14;
         }
     };
 
@@ -234,8 +234,8 @@ namespace spell
         FrostfireBolt() : Spell(FROSTFIRE_BOLT, "Frostfire Bolt", SCHOOL_FROSTFIRE)
         {
             cost = 14;
-            min_dmg = 722;
-            max_dmg = 838;
+            min_dmg = 270;
+            max_dmg = 314;
             cast_time = 3;
             coeff = 3/3.5;
             speed = 28;
@@ -252,8 +252,8 @@ namespace spell
             t_interval = 3;
             ticks = 3;
             coeff = 0;
-            min_dmg = 30;
-            max_dmg = 30;
+            min_dmg = 19;
+            max_dmg = 19;
         }
     };
 
@@ -262,8 +262,8 @@ namespace spell
         Scorch() : Spell(SCORCH, "Scorch", SCHOOL_FIRE)
         {
             cost = 8;
-            min_dmg = 382;
-            max_dmg = 451;
+            min_dmg = 163;
+            max_dmg = 193;
             cast_time = 1.5;
             coeff = 1.5/3.5;
         }
@@ -274,8 +274,8 @@ namespace spell
         FireBlast() : Spell(FIRE_BLAST, "Fire Blast", SCHOOL_FIRE)
         {
             cost = 21;
-            min_dmg = 925;
-            max_dmg = 1095;
+            min_dmg = 402;
+            max_dmg = 474;
             cast_time = 0;
             coeff = 1.5/3.5;
         }
@@ -286,8 +286,8 @@ namespace spell
         IceLance() : Spell(ICE_LANCE, "Ice Lance", SCHOOL_FROST)
         {
             cost = 6;
-            min_dmg = 224;
-            max_dmg = 258;
+            min_dmg = 133;
+            max_dmg = 157;
             cast_time = 0;
             coeff = 1.5/3.5/3.0;
             speed = 38;
@@ -299,8 +299,8 @@ namespace spell
         Pyroblast() : Spell(PYROBLAST, "Pyroblast", SCHOOL_FIRE)
         {
             cost = 22;
-            min_dmg = 1210;
-            max_dmg = 1531;
+            min_dmg = 520;
+            max_dmg = 646;
             cast_time = 5;
             coeff = 1.15;
             speed = 24;
@@ -315,8 +315,8 @@ namespace spell
             active_use = false;
             t_interval = 3;
             ticks = 4;
-            min_dmg = 113;
-            max_dmg = 113;
+            min_dmg = 53;
+            max_dmg = 53;
             coeff = 0.05;
         }
     };
@@ -327,8 +327,8 @@ namespace spell
         {
             aoe = true;
             cost = 30;
-            min_dmg = 876;
-            max_dmg = 1071;
+            min_dmg = 375;
+            max_dmg = 459;
             cast_time = 2;
             coeff = 0.2357;
         }
@@ -347,12 +347,12 @@ namespace spell
             dynamic = true;
             t_interval = 2;
             ticks = 4;
-            min_dmg = 195;
-            max_dmg = 195;
+            min_dmg = 83;
+            max_dmg = 83;
             coeff = 0.122;
         }
     };
-
+    /*  flamestrike is 1 per mage
     struct FlamestrikeDR : Spell
     {
         FlamestrikeDR() : Spell(FLAMESTRIKE_DR, "Flamestrike (Rank 8)", SCHOOL_FIRE)
@@ -365,7 +365,7 @@ namespace spell
             coeff = 0.2357 * 0.9;
         }
     };
-
+    
     struct FlamestrikeDRDot : Spell
     {
         FlamestrikeDRDot() : Spell(FLAMESTRIKE_DR_DOT, "Flamestrike (Rank 8)", SCHOOL_FIRE)
@@ -383,7 +383,7 @@ namespace spell
             max_dmg = 155;
             coeff = 0.122 * 0.9;
         }
-    };
+    };*/
 
     struct LivingBomb : Spell
     {
@@ -417,8 +417,8 @@ namespace spell
         {
             aoe = true;
             cost = 7;
-            min_dmg = 1047;
-            max_dmg = 1233;
+            min_dmg = 453;
+            max_dmg = 533;
             cast_time = 0;
             coeff = 0.1936;
         }
@@ -443,8 +443,8 @@ namespace spell
         {
             aoe = true;
             cost = 25;
-            min_dmg = 710;
-            max_dmg = 776;
+            min_dmg = 325;
+            max_dmg = 355;
             cast_time = 0;
             coeff = 0.214;
         }

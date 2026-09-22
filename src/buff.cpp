@@ -46,7 +46,7 @@ ArcaneBlast::ArcaneBlast()
     snapshot = true;
 }
 
-ArcanePower::ArcanePower(bool glyph)
+ArcanePower::ArcanePower(bool glyph) // not used
 {
     id = ARCANE_POWER;
     name = "Arcane Power";
@@ -70,7 +70,7 @@ ArcanePotency::ArcanePotency()
     duration = 1000; // unlimited
 }
 
-IcyVeins::IcyVeins()
+IcyVeins::IcyVeins() // not used
 {
     id = ICY_VEINS;
     name = "Icy Veins";
@@ -134,6 +134,31 @@ Berserking::Berserking()
     id = BERSERKING;
     name = "Berserking";
     duration = 10;
+}
+
+BloodFury::BloodFury()
+{
+    id = BLOOD_FURY;
+    name = "Blood Fury";
+    duration = 15;
+}
+
+ReadLeyLine::ReadLeyLine()
+{
+    id = READ_LEY_LINE;
+    name = "Read Ley Line";
+    duration = 15;
+}
+
+Eureka::Eureka()
+{
+    id = EUREKA;
+    name = "Eureka";
+    duration = 1000;
+    max_stacks = 3;
+    stack_increment = -1;
+    stack_refresh = false;
+    snapshot = true;
 }
 
 MissileBarrage::MissileBarrage()

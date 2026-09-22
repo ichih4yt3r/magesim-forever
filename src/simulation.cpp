@@ -131,10 +131,10 @@ SimulationResult Simulation::run(bool single)
 
     for (auto &timing : config.timings)
     {
-        if (timing.name == "bloodlust")
-            pushBuffGainAll(std::make_shared<buff::Bloodlust>(), timing.t);
-        else if (timing.name == "innervate")
+        if (timing.name == "innervate")
             pushBuffGain(player, std::make_shared<buff::Innervate>(), timing.t);
+        else if (timing.name == "bloodlust")
+            pushBuffGainAll(std::make_shared<buff::Bloodlust>(), timing.t);
         else if (timing.name == "power_infusion")
             pushBuffGain(player, std::make_shared<buff::PowerInfusion>(), timing.t);
         else if (timing.name == "mana_tide")

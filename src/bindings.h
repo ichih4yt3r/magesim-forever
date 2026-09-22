@@ -92,7 +92,9 @@ EMSCRIPTEN_BINDINGS(my_module)
         .value("RACE_GNOME", RACE_GNOME)
         .value("RACE_HUMAN", RACE_HUMAN)
         .value("RACE_TROLL", RACE_TROLL)
-        .value("RACE_UNDEAD", RACE_UNDEAD);
+        .value("RACE_UNDEAD", RACE_UNDEAD)
+        .value("RACE_SKYBORNE", RACE_SKYBORNE)
+        .value("RACE_ORC", RACE_ORC);
 
     emscripten::enum_<Trinket>("Trinket")
         .value("TRINKET_NONE", TRINKET_NONE)
@@ -301,6 +303,18 @@ EMSCRIPTEN_BINDINGS(my_module)
         .field("spell_power", &Stats::spell_power);
 
     emscripten::value_object<Talents>("Talents")
+        // new arcane talents
+        .field("arcane_blast", &Talents::arcane_blast)
+        .field("arcane_geometry", &Talents::arcane_geometry)
+        .field("improved_channeling", &Talents::improved_channeling)
+        
+        // new fire talents
+        .field("wake_of_fire", &Talents::wake_of_fire)
+        
+        // new frost talents
+        .field("ice_lance", &Talents::ice_lance)
+        
+        // old talents
         .field("arcane_focus", &Talents::arcane_focus)
         .field("clearcast", &Talents::clearcast)
         .field("magic_attunement", &Talents::magic_attunement)
@@ -367,7 +381,6 @@ EMSCRIPTEN_BINDINGS(my_module)
 
     emscripten::value_object<Glyphs>("Glyphs")
         .field("arcane_barrage", &Glyphs::arcane_barrage)
-        .field("arcane_blast", &Glyphs::arcane_blast)
         .field("arcane_explosion", &Glyphs::arcane_explosion)
         .field("arcane_missiles", &Glyphs::arcane_missiles)
         .field("arcane_power", &Glyphs::arcane_power)

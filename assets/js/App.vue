@@ -280,7 +280,7 @@
                         </div>
                     </div>
                 </div>
-                <a class="github" href="https://github.com/Cheesehyvel/magesim-wotlk" target="_blank"></a>
+                <a class="github" href="https://github.com/Cheesehyvel/magesim-forever" target="_blank"></a>
                 <div class="donate">
                     <a href="https://www.paypal.com/donate/?hosted_button_id=CU9RF4LCMW8W6" target="_blank">
                         Donate
@@ -791,6 +791,8 @@
                                         <option :value="races.RACE_HUMAN">Human</option>
                                         <option :value="races.RACE_TROLL">Troll</option>
                                         <option :value="races.RACE_UNDEAD">Undead</option>
+                                        <option :value="races.RACE_SKYBORNE">Skyborne</option>
+                                        <option :value="races.RACE_ORC">Orc</option>
                                     </select>
                                 </div>
                                 <div class="form-item">
@@ -2083,71 +2085,51 @@
                 },
 
                 talents: {
+                    wand_specialization: 0,
                     arcane_focus: 0,
+                    arcane_subtlety: 0,
+                    magic_absorption: 0,
                     clearcast: 0,
-                    magic_attunement: 0,
-                    spell_impact: 0,
-                    student_of_the_mind: 0,
-                    focus_magic: 0,
+                    arcane_resilience: 0,
+                    arcane_geometry: 0,
+                    arcane_impact: 0,
+                    arcane_blast: 0,
                     arcane_shielding: 0,
                     arcane_meditation: 0,
-                    torment_of_the_weak: 0,
+                    missile_barrage: 0,
                     presence_of_mind: 0,
                     arcane_mind: 0,
                     arcane_instability: 0,
-                    arcane_potency: 0,
-                    arcane_empowerment: 0,
                     arcane_power: 0,
-                    incanters_absorption: 0,
-                    arcane_floes: 0,
-                    mind_mastery: 0,
-                    missile_barrage: 0,
-                    netherwind_presence: 0,
-                    spell_power: 0,
-                    arcane_barrage: 0,
 
-                    imp_fire_blast: 0,
+                    wake_of_fire: 0,
                     incineration: 0,
                     imp_fireball: 0,
                     ignite: 0,
-                    world_in_flames: 0,
+                    flame_throwing: 0,
+                    impact: 0,
+                    imp_flamestrike: 0,
                     pyroblast: 0,
                     imp_scorch: 0,
-                    master_of_elements: 0,
-                    playing_with_fire: 0,
-                    critical_mass: 0,
-                    blast_weave: 0,
-                    fire_power: 0,
-                    pyromaniac: 0,
-                    combustion: 0,
-                    molten_fury: 0,
-                    empowered_fire: 0,
-                    firestarter: 0,
-                    dragons_breath: 0,
                     hot_streak: 0,
-                    burnout: 0,
-                    living_bomb: 0,
+                    master_of_elements: 0,
+                    critical_mass: 0,
+                    blast_wave: 0,
+                    fire_power: 0,
+                    combustion: 0,
 
                     imp_frostbolt: 0,
-                    ice_floes: 0,
-                    ice_shards: 0,
                     precision: 0,
+                    ice_shards: 0,
                     piercing_ice: 0,
-                    icy_veins: 0,
                     frost_channeling: 0,
+                    ice_lance: 0,
+                    imp_blizzard: 0,
                     shatter: 0,
-                    cold_snap: 0,
                     imp_cone_of_cold: 0,
-                    cold_as_ice: 0,
-                    winters_chill: 0,
-                    arctic_winds: 0,
-                    empowered_frostbolt: 0,
+                    cold_snap: 0,
                     fingers_of_frost: 0,
-                    brain_freeze: 0,
-                    water_elemental: 0,
-                    enduring_winter: 0,
-                    chilled_to_the_bone: 0,
-                    deep_freeze: 0,
+                    winters_chill: 0,
                 },
 
                 glyphs: {
@@ -2307,71 +2289,51 @@
 
             data.slots = [...slots];
 
+            data.talent_map[0][0] = "wand_specialization";
             data.talent_map[0][1] = "arcane_focus";
+            data.talent_map[0][3] = "arcane_subtlety";
+            data.talent_map[0][4] = "magic_absorption";
             data.talent_map[0][5] = "clearcast";
-            data.talent_map[0][6] = "magic_attunement";
-            data.talent_map[0][7] = "spell_impact";
-            data.talent_map[0][8] = "student_of_the_mind";
-            data.talent_map[0][9] = "focus_magic";
+            data.talent_map[0][6] = "arcane_resilience";
+            data.talent_map[0][7] = "arcane_geometry";
+            data.talent_map[0][8] = "arcane_impact";
+            data.talent_map[0][9] = "arcane_blast";
             data.talent_map[0][10] = "arcane_shielding";
             data.talent_map[0][12] = "arcane_meditation";
-            data.talent_map[0][13] = "torment_of_the_weak";
-            data.talent_map[0][15] = "presence_of_mind";
-            data.talent_map[0][16] = "arcane_mind";
-            data.talent_map[0][18] = "arcane_instability";
-            data.talent_map[0][19] = "arcane_potency";
-            data.talent_map[0][20] = "arcane_empowerment";
-            data.talent_map[0][21] = "arcane_power";
-            data.talent_map[0][22] = "incanters_absorption";
-            data.talent_map[0][23] = "arcane_floes";
-            data.talent_map[0][24] = "mind_mastery";
-            data.talent_map[0][26] = "missile_barrage";
-            data.talent_map[0][27] = "netherwind_presence";
-            data.talent_map[0][28] = "spell_power";
-            data.talent_map[0][29] = "arcane_barrage";
+            data.talent_map[0][13] = "missile_barrage";
+            data.talent_map[0][14] = "presence_of_mind";
+            data.talent_map[0][15] = "arcane_mind";
+            data.talent_map[0][16] = "arcane_instability";
+            data.talent_map[0][17] = "arcane_power";
 
-            data.talent_map[1][0] = "imp_fire_blast";
+            data.talent_map[1][0] = "wake_of_fire";
             data.talent_map[1][1] = "incineration";
             data.talent_map[1][2] = "imp_fireball";
             data.talent_map[1][3] = "ignite";
-            data.talent_map[1][5] = "world_in_flames";
+            data.talent_map[1][4] = "flame_throwing";
+            data.talent_map[1][5] = "impact";
+            data.talent_map[1][7] = "imp_flamestrike";
             data.talent_map[1][8] = "pyroblast";
-            data.talent_map[1][10] = "imp_scorch";
+            data.talent_map[1][9] = "imp_scorch";
+            data.talent_map[1][11] = "hot_streak";
             data.talent_map[1][12] = "master_of_elements";
-            data.talent_map[1][13] = "playing_with_fire";
-            data.talent_map[1][14] = "critical_mass";
-            data.talent_map[1][15] = "blast_weave";
-            data.talent_map[1][17] = "fire_power";
-            data.talent_map[1][18] = "pyromaniac";
-            data.talent_map[1][19] = "combustion";
-            data.talent_map[1][20] = "molten_fury";
-            data.talent_map[1][22] = "empowered_fire";
-            data.talent_map[1][23] = "firestarter";
-            data.talent_map[1][24] = "dragons_breath";
-            data.talent_map[1][25] = "hot_streak";
-            data.talent_map[1][26] = "burnout";
-            data.talent_map[1][27] = "living_bomb";
+            data.talent_map[1][13] = "critical_mass";
+            data.talent_map[1][14] = "blast_wave";
+            data.talent_map[1][15] = "fire_power";
+            data.talent_map[1][16] = "combustion";
 
             data.talent_map[2][1] = "imp_frostbolt";
-            data.talent_map[2][2] = "ice_floes";
+            data.talent_map[2][2] = "precision";
             data.talent_map[2][3] = "ice_shards";
-            data.talent_map[2][5] = "precision";
             data.talent_map[2][7] = "piercing_ice";
-            data.talent_map[2][8] = "icy_veins";
-            data.talent_map[2][11] = "frost_channeling";
-            data.talent_map[2][12] = "shatter";
-            data.talent_map[2][13] = "cold_snap";
+            data.talent_map[2][8] = "frost_channeling";
+            data.talent_map[2][9] = "ice_lance";
+            data.talent_map[2][10] = "imp_blizzard";
+            data.talent_map[2][13] = "shatter";
             data.talent_map[2][14] = "imp_cone_of_cold";
-            data.talent_map[2][16] = "cold_as_ice";
+            data.talent_map[2][15] = "cold_snap";
+            data.talent_map[2][16] = "fingers_of_frost";
             data.talent_map[2][17] = "winters_chill";
-            data.talent_map[2][20] = "arctic_winds";
-            data.talent_map[2][21] = "empowered_frostbolt";
-            data.talent_map[2][22] = "fingers_of_frost";
-            data.talent_map[2][23] = "brain_freeze";
-            data.talent_map[2][24] = "water_elemental";
-            data.talent_map[2][25] = "enduring_winter";
-            data.talent_map[2][26] = "chilled_to_the_bone";
-            data.talent_map[2][27] = "deep_freeze";
 
             return data;
         },
@@ -2382,6 +2344,7 @@
                     this.races.RACE_GNOME,
                     this.races.RACE_HUMAN,
                     this.races.RACE_DRAENEI,
+                    this.races.RACE_SKYBORNE,
                 ];
 
                 if (alliance.indexOf(this.config.race) != -1)
@@ -2630,11 +2593,11 @@
             timings() {
                 var timings = [];
 
-                timings.push({
+                /* timings.push({
                     name: "bloodlust",
                     title: "Bloodlust",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_nature_bloodlust.jpg",
-                });
+                }); */
                 timings.push({
                     name: "power_infusion",
                     title: "Power Infusion",
@@ -2674,6 +2637,21 @@
                     name: "berserking",
                     title: "Berserking",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/racial_troll_berserk.jpg",
+                });
+                timings.push({
+                    name: "blood_fury",
+                    title: "Blood Fury",
+                    icon: "https://wow.zamimg.com/images/wow/icons/large/racial_orc_berserkerstrength.jpg",
+                });
+                timings.push({
+                    name: "read_ley_line",
+                    title: "Read Ley Line",
+                    icon: "https://wow.zamimg.com/images/wow/icons/large/spell_arcane_arcaneresilience.jpg",
+                });
+                timings.push({
+                    name: "eureka",
+                    title: "Eureka",
+                    icon: "https://wow.zamimg.com/images/wow/icons/large/inv_gizmo_02.jpg",
                 });
                 timings.push({
                     name: "arcane_torrent",
@@ -3061,6 +3039,12 @@
                     return this.config.race == constants.races.RACE_TROLL;
                 if (name == "arcane_torrent")
                     return this.config.race == constants.races.RACE_BLOOD_ELF;
+                if (name == "eureka")
+                    return this.config.race == constants.races.RACE_GNOME;
+                if (name == "blood_fury")
+                    return this.config.race == constants.races.RACE_ORC;
+                if (name == "read_ley_line")
+                    return this.config.race == constants.races.RACE_SKYBORNE;
                 if (name == "potion")
                     return this.config.potion != constants.potions.POTION_NONE;
                 if (name == "conjured")
@@ -3215,10 +3199,19 @@
                 }
             },
 
+            readLocal(name) {
+                return window.localStorage.getItem("magesim_forever_" + name)
+                    || window.localStorage.getItem("magesim_wotlk_" + name);
+            },
+
+            writeLocal(name, value) {
+                window.localStorage.setItem("magesim_forever_" + name, value);
+            },
+
             checkNewUser() {
-                var storages = ["magesim_wotlk_profile", "magesim_wotlk_profiles", "magesim_wotlk_custom_items"];
+                var storages = ["profile", "profiles", "custom_items"];
                 for (var key of storages) {
-                    if (localStorage.getItem(key) !== null)
+                    if (this.readLocal(key) !== null)
                         return;
                 }
 
@@ -3320,12 +3313,28 @@
                         reject(error);
                     });
 
-                    if (self.config.custom_stats[stat] == "")
-                        self.config.custom_stats[stat] = 0;
-                    self.config.custom_stats[stat]+= value;
-                    self.prepare();
+                    var previous = self.config.custom_stats[stat];
+                    if (previous == "" || previous == null || typeof previous == "undefined")
+                        previous = 0;
+
+                    if (stat != "base")
+                        self.config.custom_stats[stat] = previous + value;
+
+                    self.fillEmptyFields();
+                    self.sortTimings();
+                    self.itemStats();
+                    self.itemConfig();
+                    self.calcStats();
+
                     var config = _.cloneDeep(self.config);
-                    self.config.custom_stats[stat]-= value;
+
+                    if (stat != "base")
+                        self.config.custom_stats[stat] = previous;
+
+                    self.itemStats();
+                    self.itemConfig();
+                    self.calcStats();
+
                     if (rng_seed)
                         config.rng_seed = rng_seed;
                     self.is_running = true;
@@ -3369,6 +3378,7 @@
                 }
 
                 this.is_running_ep = false;
+                this.prepare();
             },
 
             async runComparisonFor(item_id) {
@@ -3644,8 +3654,8 @@
             baseStats() {
                 // Undead default
                 var stats = {
-                    intellect: 179,
-                    spirit: 179,
+                    intellect: 123,
+                    spirit: 125,
                     mp5: 0,
                     crit: 0.91,
                     hit: 0,
@@ -3657,24 +3667,32 @@
                 };
 
                 if (this.config.race == this.races.RACE_TROLL) {
-                    stats.intellect = 177;
-                    stats.spirit = 175;
+                    stats.intellect = 121;
+                    stats.spirit = 121;
                 }
                 if (this.config.race == this.races.RACE_BLOOD_ELF) {
-                    stats.intellect = 184;
-                    stats.spirit = 172;
+                    stats.intellect = 125;
+                    stats.spirit = 125;
                 }
                 if (this.config.race == this.races.RACE_DRAENEI) {
-                    stats.intellect = 181;
-                    stats.spirit = 176;
+                    stats.intellect = 125;
+                    stats.spirit = 125;
                 }
                 if (this.config.race == this.races.RACE_GNOME) {
-                    stats.intellect = 184;
-                    stats.spirit = 174;
+                    stats.intellect = 128;
+                    stats.spirit = 120;
                 }
                 if (this.config.race == this.races.RACE_HUMAN) {
-                    stats.intellect = 181;
-                    stats.spirit = 174;
+                    stats.intellect = 125;
+                    stats.spirit = 126;
+                }
+                if (this.config.race == this.races.RACE_SKYBORNE) {
+                    stats.intellect = 125;
+                    stats.spirit = 125;
+                }
+                if (this.config.race == this.races.RACE_ORC) {
+                    stats.intellect = 125;
+                    stats.spirit = 125;
                 }
 
                 return stats;
@@ -3844,7 +3862,7 @@
                 }
 
                 // Arcane intellect
-                stats.intellect+= 60;
+                stats.intellect+= 31; // 60 is wotlk, classic is 31
 
                 // Spirit
                 if (this.config.divine_spirit)
@@ -3973,8 +3991,8 @@
                 }
                 if (this.config.talents.arcane_mind)
                     stats.intellect*= 1.0 + this.config.talents.arcane_mind*0.03;
-                if (this.config.race == this.races.RACE_GNOME)
-                    stats.intellect*= 1.05;
+                // Expansive mind is 5% more mana only, not int. if (this.config.race == this.races.RACE_GNOME)
+                   // stats.intellect*= 1.05;
                 if (this.config.race == this.races.RACE_HUMAN)
                     stats.spirit*= 1.03;
                 if (this.config.blessing_of_kings) {
@@ -4007,7 +4025,7 @@
             displayStats() {
                 var x;
                 var stats = _.cloneDeep(this.config.stats);
-                stats.mana = 3268;
+                stats.mana = 933;
 
                 // Buff: Spell power
                 if (this.config.demonic_pact || this.config.totem_of_wrath || this.config.flametongue) {
@@ -4020,10 +4038,6 @@
                         x = this.config.demonic_pact_bonus;
                     stats.spell_power+= x;
                 }
-
-                // Mind mastery
-                if (this.config.talents.mind_mastery)
-                    stats.spell_power+= Math.round(stats.intellect * this.config.talents.mind_mastery * 0.03);
 
                 // Buff:: Spell haste
                 if (this.config.buff_spell_haste)
@@ -4066,8 +4080,11 @@
 
                 // Mana
                 stats.mana+= stats.intellect*15 - 280;
+                if (this.config.race == this.races.RACE_GNOME)
+                    stats.mana*= 1.05;
                 if (this.metaGem() && this.metaGem().id == this.items.ids.META_BEAMING_EARTHSIEGE)
-                    stats.mana = Math.round(stats.mana*1.02);
+                    stats.mana*= 1.02;
+                stats.mana = Math.round(stats.mana);
 
                 this.display_stats = stats;
             },
@@ -4654,23 +4671,23 @@
 
             setSpec(spec) {
                 if (spec == "arcane") {
-                    this.config.build = "https://www.wowhead.com/wotlk/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
                     this.config.rotation = constants.rotations.ROTATION_ST_AB_AM;
                 }
                 else if (spec == "arcane_barrage") {
-                    this.config.build = "https://www.wowhead.com/wotlk/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
                     this.config.rotation = constants.rotations.ROTATION_ST_AB_AM_BARRAGE;
                 }
                 else if (spec == "fire") {
-                    this.config.build = "https://www.wowhead.com/wotlk/talent-calc/mage/23000503310003-0055030012303330053120300351_001q1g11xkk21q1y31rj441rj551rj7";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/23000503310003-0055030012303330053120300351_001q1g11xkk21q1y31rj441rj551rj7";
                     this.config.rotation = constants.rotations.ROTATION_ST_FIRE;
                 }
                 else if (spec == "frost") {
-                    this.config.build = "https://www.wowhead.com/wotlk/talent-calc/mage/23000503110003--0533030310233100030152231351_00258s11q1j21q1y31kd841rj451rj5";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/23000503110003--0533030310233100030152231351_00258s11q1j21q1y31kd841rj451rj5";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROST;
                 }
                 else if (spec == "ffb") {
-                    this.config.build = "https://www.wowhead.com/wotlk/talent-calc/mage/-2305032012303330053120300351-023303031003_001vrn11xkk21q1y31rj441rj551rj6";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/-2305032012303330053120300351-023303031003_001vrn11xkk21q1y31rj441rj551rj6";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROSTFIRE;
                 }
 
@@ -4749,9 +4766,9 @@
                 var has_glyphs = false;
 
                 var trees = [
-                    [2,3,5,3,2,5,2,3,3,1,2,2,3,3,2,1,5,3,3,2,3,1,3,2,5,1,5,3,2,1],
-                    [2,3,5,5,2,3,2,3,1,2,3,2,3,3,3,1,2,5,3,1,2,2,3,2,1,3,5,1],
-                    [3,5,3,3,2,3,3,3,1,3,2,3,3,1,3,3,2,3,2,1,5,2,2,3,1,3,5,1],
+                    [2,5,5,2,2,5,2,2,3,1,2,2,3,1,1,5,3,1],
+                    [2,3,5,5,2,3,3,3,1,3,2,1,3,3,1,5,1],
+                    [2,5,5,5,3,2,3,3,3,1,3,2,1,3,3,1,2,5,1],
                 ];
 
                 for (var i=0; i<build.length; i++) {
@@ -5239,7 +5256,7 @@
                     var tstring = talents[0]+"-"+talents[1]+"-"+talents[2];
                     tstring = tstring.replace(/0+\-/g, "-");
                     tstring = tstring.replace(/0+$/g, "");
-                    tstring = "https://wowhead.com/wotlk/talent-calc/mage/"+tstring;
+                    tstring = "https://wowhead.com/forever/talent-calc/mage/"+tstring;
 
                     if (data.glyphs && data.glyphs.length) {
                         var encoding = "0123456789abcdefghjkmnpqrstvwxyz";
@@ -5428,10 +5445,14 @@
                         profile.config.race = constants.races.RACE_GNOME;
                     else if (race == "human")
                         profile.config.race = constants.races.RACE_HUMAN;
+                    else if (race == "skyborne")
+                        profile.config.race = constants.races.RACE_SKYBORNE;
+                    else if (race == "orc")
+                        profile.config.race = constants.races.RACE_ORC;    
                 }
 
                 if (this.import_profile.config && data.talents) {
-                    var tstring = "https://wowhead.com/wotlk/talent-calc/mage/"+data.talents;
+                    var tstring = "https://wowhead.com/forever/talent-calc/mage/"+data.talents;
                     var rotation = null;
 
                     if (data.glyphs) {
@@ -5687,7 +5708,7 @@
             },
 
             loadFavorites() {
-                var str = window.localStorage.getItem("magesim_wotlk_favorites");
+                var str = this.readLocal("favorites");
                 if (!str)
                     return;
 
@@ -5699,7 +5720,7 @@
             },
 
             saveFavorites() {
-                window.localStorage.setItem("magesim_wotlk_favorites", JSON.stringify(this.favorites));
+                this.writeLocal("favorites", JSON.stringify(this.favorites));
             },
 
             getRotationString(rot) {
@@ -5887,6 +5908,7 @@
 
             closeCustomStats() {
                 this.custom_stats_open = false;
+                this.prepare();
             },
 
             openCustomItem() {
@@ -6018,11 +6040,11 @@
             saveFilters() {
                 var terms = this.search_item.toLowerCase().split(" ");
                 terms = terms.filter(t => t.indexOf(":") != -1);
-                window.localStorage.setItem("magesim_wotlk_filters", terms.join(" "));
+                this.writeLocal("filters", terms.join(" "));
             },
 
             loadFilters(def) {
-                var filters = window.localStorage.getItem("magesim_wotlk_filters");
+                var filters = this.readLocal("filters");
                 return filters ? filters : def;
             },
 
@@ -6041,11 +6063,11 @@
                 profile.enchants = _.cloneDeep(this.enchants);
                 profile.gems = _.cloneDeep(this.gems);
                 profile.config = _.cloneDeep(this.config);
-                window.localStorage.setItem("magesim_wotlk_profile", JSON.stringify(profile));
+                this.writeLocal("profile", JSON.stringify(profile));
             },
 
             loadCurrentProfile() {
-                var str = window.localStorage.getItem("magesim_wotlk_profile");
+                var str = this.readLocal("profile");
                 if (!str)
                     return;
 
@@ -6074,11 +6096,11 @@
             },
 
             saveProfiles() {
-                window.localStorage.setItem("magesim_wotlk_profiles", JSON.stringify(this.profiles));
+                this.writeLocal("profiles", JSON.stringify(this.profiles));
             },
 
             loadProfiles() {
-                var str = window.localStorage.getItem("magesim_wotlk_profiles");
+                var str = this.readLocal("profiles");
                 if (str) {
                     var profiles = JSON.parse(str);
                     if (profiles)
@@ -6087,11 +6109,11 @@
             },
 
             saveCustomItems() {
-                window.localStorage.setItem("magesim_wotlk_custom_items", JSON.stringify(this.customItems()));
+                this.writeLocal("custom_items", JSON.stringify(this.customItems()));
             },
 
             loadCustomItems() {
-                var str = window.localStorage.getItem("magesim_wotlk_custom_items");
+                var str = this.readLocal("custom_items");
                 if (str) {
                     var items = JSON.parse(str);
                     if (items) {

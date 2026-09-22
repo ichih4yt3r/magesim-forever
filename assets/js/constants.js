@@ -5,7 +5,9 @@ export default {
         RACE_GNOME: 2,
         RACE_HUMAN: 3,
         RACE_TROLL: 4,
-        RACE_UNDEAD: 5
+        RACE_UNDEAD: 5,
+        RACE_SKYBORNE: 6,
+        RACE_ORC: 7,
     },
     rotations: {
         ROTATION_ST_FROSTFIRE: 0,
@@ -69,6 +71,9 @@ export default {
         BRAIN_FREEZE: 57761,
         FINGERS_OF_FROST: 44544,
         INNERVATE: 29166,
+        BLOOD_FURY: 20572,
+        READ_LEY_LINE: 100001,
+        EUREKA: 100002,
         PRAXIS: 64867,
         PUSHING_THE_LIMIT: 70753,
         ASHEN_BAND: 72416,

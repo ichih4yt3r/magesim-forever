@@ -4,9 +4,7 @@ onmessage = (event) => {
     var data = event.data;
 
     if (data.type == "start") {
-        const wasm = fetch("/magesim.wasm", {cache: "no-store"})
-        .then(r => r.arrayBuffer())
-        .then(binary => MageSim({wasmBinary: binary}))
+        MageSim({ locateFile: (path) => `${import.meta.env.BASE_URL}${path}` })
         .then(m => {
             var config = m.allocConfig();
             for (var key in data.config) {
@@ -89,6 +87,12 @@ onmessage = (event) => {
             postMessage({
                 type: "success",
                 result: result
+            });
+        })
+        .catch((error) => {
+            postMessage({
+                type: "error",
+                error: error && error.message ? error.message : String(error)
             });
         });
     }

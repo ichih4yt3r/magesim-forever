@@ -9,7 +9,7 @@ def getItem(item_id, phase = 1, faction = None):
     if item_id[:4] == "http":
         url = item_id + "&xml"
     else:
-        url = "https://www.wowhead.com/wotlk/?item=" + item_id + "&xml"
+        url = "https://www.wowhead.com/forever/?item=" + item_id + "&xml"
 
     response = requests.get(url)
     if response.status_code != 200:

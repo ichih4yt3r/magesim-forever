@@ -19,6 +19,9 @@ namespace cooldown
         DEEP_FREEZE = 44572,
         BRAIN_FREEZE = 57761,
         BERSERKING = 20554,
+        BLOOD_FURY = 20572,
+        READ_LEY_LINE = 100001,
+        EUREKA = 100002,
         ARCANE_TORRENT = 28730,
         ICY_VEINS = 12472,
         FIRE_BLAST = 42873,
@@ -268,6 +271,42 @@ namespace cooldown
         {
             id = BERSERKING;
             duration = 180;
+        }
+
+    };
+
+    class BloodFury : public Cooldown
+    {
+
+    public:
+        BloodFury()
+        {
+            id = BLOOD_FURY;
+            duration = 120;
+        }
+
+    };
+
+    class ReadLeyLine : public Cooldown
+    {
+
+    public:
+        ReadLeyLine()
+        {
+            id = READ_LEY_LINE;
+            duration = 120;
+        }
+
+    };
+
+    class Eureka : public Cooldown
+    {
+
+    public:
+        Eureka()
+        {
+            id = EUREKA;
+            duration = 120;
         }
 
     };

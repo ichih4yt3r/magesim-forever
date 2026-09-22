@@ -1,8 +1,8 @@
-# MageSim Wotlk
+# MageSim Forever
 
-Mage DPS simulator for WoW Wotlk Classic.
+Mage DPS simulator for WoW Forever.
 
-[Live sim website](https://cheesehyvel.github.io/magesim-wotlk/)
+[Live sim website](https://cheesehyvel.github.io/magesim-forever/)
 
 Backend is written in C++ and compiled with Emscripten into WebAssembly.\
 Frontend is built with Vue and compiled with Vite.

@@ -18,7 +18,7 @@ namespace unit
 Player::Player(const Config& _config, const Stats& _stats, const Talents& _talents, const Glyphs& _glyphs)
     : Unit(_config, _stats), talents(_talents), glyphs(_glyphs)
 {
-    base_mana = 3268;
+    base_mana = 933;
     name = "Player";
     id = 1;
     used_timings.resize(_config.timings.size());
@@ -58,7 +58,7 @@ void Player::reset()
 
 Faction Player::faction() const
 {
-    if (race == RACE_GNOME || race == RACE_HUMAN || race == RACE_DRAENEI)
+    if (race == RACE_GNOME || race == RACE_HUMAN || race == RACE_DRAENEI || race == RACE_SKYBORNE)
         return FACTION_ALLIANCE;
     return FACTION_HORDE;
 }
@@ -118,6 +118,9 @@ double Player::manaPerSecond(const State& state) const
     }
 
     mps += std::min(1.0, while_casting) * spi;
+
+    if (hasBuff(buff::READ_LEY_LINE))
+        mps *= 2.0;
 
     return mps;
 }
@@ -382,6 +385,9 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     if (spell->proc)
         return multi;
 
+    if (hasBuff(buff::EUREKA, true))
+        multi *= 1.1;
+
     if (talents.torment_of_the_weak) {
         if (spell->id == spell::FROSTBOLT ||
             spell->id == spell::FIREBALL ||
@@ -518,6 +524,9 @@ double Player::manaCostMultiplier(std::shared_ptr<spell::Spell> spell) const
             multi*= 0.9;
     }
 
+    if (hasBuff(buff::EUREKA))
+        multi *= 0.5;
+
     return multi;
 }
 
@@ -545,8 +554,8 @@ double Player::getSpellPower(School school) const
     if (hasBuff(buff::FLAME_CAP) && (school == SCHOOL_FIRE || school == SCHOOL_FROSTFIRE))
         sp += 80.0;
 
-    if (talents.mind_mastery)
-        sp += getIntellect() * talents.mind_mastery * 0.03;
+    if (hasBuff(buff::BLOOD_FURY))
+        sp *= 1.1;
 
     return sp;
 }
@@ -723,6 +732,13 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
 
     bool is_harmful = spell->max_dmg > 0;
 
+    if (hasBuff(buff::EUREKA) && spell->active_use && is_harmful) {
+        if (buffStacks(buff::EUREKA) <= 1)
+            actions.push_back(buffExpireAction<buff::Eureka>());
+        else
+            actions.push_back(buffAction<buff::Eureka>());
+    }
+
     // Cooldowns
     if (spell->id == spell::FIRE_BLAST)
         actions.push_back(cooldownAction<cooldown::FireBlast>(talents.imp_fire_blast));
@@ -774,10 +790,6 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     if (spell->id == spell::FLAMESTRIKE) {
         t_flamestrike = state.t;
         actions.push_back(spellAction<spell::FlamestrikeDot>());
-    }
-    if (spell->id == spell::FLAMESTRIKE_DR) {
-        t_flamestrike_dr = state.t;
-        actions.push_back(spellAction<spell::FlamestrikeDRDot>());
     }
 
     if (hasBuff(buff::GHOST_FINGERS))
@@ -1499,6 +1511,9 @@ bool Player::shouldEvocate(const State& state)
     if (hasBuff(buff::BLOODLUST) && manaPercent() > 10.0)
         return false;
 
+    if (hasBuff(buff::POWER_INFUSION) && manaPercent() > 10.0)
+        return false;
+
     if (state.duration - state.t < 12)
         return false;
 
@@ -1851,6 +1866,15 @@ action::Action Player::useCooldown(const State& state)
         combustion = 0;
         return buffAction<buff::Combustion>(true);
     }
+    else if (race == RACE_ORC && !hasCooldown(cooldown::BLOOD_FURY) && useTimingIfPossible("blood_fury", state)) {
+        return buffCooldownAction<buff::BloodFury, cooldown::BloodFury>(true);
+    }
+    else if (race == RACE_SKYBORNE && !hasCooldown(cooldown::READ_LEY_LINE) && useTimingIfPossible("read_ley_line", state)) {  
+        return buffCooldownAction<buff::ReadLeyLine, cooldown::ReadLeyLine>(true);
+    }
+    else if (race == RACE_GNOME && !hasCooldown(cooldown::EUREKA) && useTimingIfPossible("eureka", state)) {
+        return buffCooldownAction<buff::Eureka, cooldown::Eureka>(true);
+    }
     else if (talents.presence_of_mind && !hasCooldown(cooldown::PRESENCE_OF_MIND) && !hasBuff(buff::ARCANE_POWER) && useTimingIfPossible("presence_of_mind", state)) {
         return buffCooldownAction<buff::PresenceOfMind, cooldown::PresenceOfMind>(true);
     }
@@ -1863,6 +1887,7 @@ action::Action Player::useCooldown(const State& state)
     else if (race == RACE_TROLL && !hasCooldown(cooldown::BERSERKING) && useTimingIfPossible("berserking", state)) {
         return buffCooldownAction<buff::Berserking, cooldown::Berserking>(true);
     }
+    
     else if (race == RACE_BLOOD_ELF && !hasCooldown(cooldown::ARCANE_TORRENT) && manaPercent() <= 94.0 && useTimingIfPossible("arcane_torrent", state)) {
         return spellAction<spell::ArcaneTorrent>();
     }
@@ -2268,8 +2293,6 @@ action::Action Player::nextAction(const State& state)
             return spellAction<spell::ArcaneExplosion>();
         else if (t_flamestrike + 8.0 - castTime(fs) <= state.t)
             return spellAction(fs);
-        else if (t_flamestrike_dr + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
-            return spellAction<spell::FlamestrikeDR>();
         else
             return spellAction<spell::ArcaneExplosion>();
     }
@@ -2288,8 +2311,6 @@ action::Action Player::nextAction(const State& state)
             return spellAction<spell::ArcaneExplosion>();
         else if (t_flamestrike + 8.0 - castTime(fs) <= state.t)
             return spellAction(fs);
-        else if (t_flamestrike_dr + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
-            return spellAction<spell::FlamestrikeDR>();
         else
             return spellAction<spell::Blizzard>();
     }
@@ -2297,9 +2318,6 @@ action::Action Player::nextAction(const State& state)
     // Flamestrike
     else if (config.rotation == ROTATION_AOE_FS) {
         auto fs = std::make_shared<spell::Flamestrike>();
-        double ct = castTime(fs);
-        if (t_flamestrike + 8.0 - ct > state.t && t_flamestrike_dr + 8.0 - ct <= state.t && state.t + 8.0 < state.duration)
-            return spellAction<spell::FlamestrikeDR>();
         return spellAction(fs);
     }
 
@@ -2311,8 +2329,6 @@ action::Action Player::nextAction(const State& state)
         if (config.targets > 12 && !state.isMoving()) {
             if (t_flamestrike + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
                 return spellAction(fs);
-            else if (t_flamestrike_dr + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
-                return spellAction<spell::FlamestrikeDR>();
         }
 
         // Check for Living Bomb targets
@@ -2327,8 +2343,6 @@ action::Action Player::nextAction(const State& state)
             return spellAction<spell::ArcaneExplosion>();
         else if (t_flamestrike + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
             return spellAction(fs);
-        else if (t_flamestrike_dr + 8.0 - castTime(fs) <= state.t && state.t + 8.0 < state.duration)
-            return spellAction<spell::FlamestrikeDR>();
         else
             return spellAction(fs);
     }

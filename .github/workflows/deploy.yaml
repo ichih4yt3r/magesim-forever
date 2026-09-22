@@ -44,7 +44,7 @@ jobs:
       - name: Build emscripten
         run: make
       - name: Build vite
-        run: npx vite build --base=/magesim-wotlk/
+        run: npx vite build --base=/magesim-forever/
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
