@@ -901,7 +901,7 @@
                                         <option :value="1">Forever</option>
                                         <option :value="2">Alternative</option>
                                     </select>
-                                </div> --> 
+                                </div>  
                                 <div class="form-item" v-if="config.targets > 1">
                                     <label><input type="checkbox" v-model="config.only_main_dmg">
                                         <span>Focus dps on main target</span>
@@ -2069,7 +2069,7 @@
                 timings: Array(),
                 interruptions: Array(),
 
-                build: "",
+                build: "https://www.wowhead.com/forever/talent-calc/mage/v1055205023100311531-03-0550000001_t0",
 
                 stats: {
                     intellect: 0,
