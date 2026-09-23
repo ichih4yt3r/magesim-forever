@@ -901,7 +901,7 @@
                                         <option :value="1">Forever</option>
                                         <option :value="2">Alternative</option>
                                     </select>
-                                </div>  
+                                </div>  -->
                                 <div class="form-item" v-if="config.targets > 1">
                                     <label><input type="checkbox" v-model="config.only_main_dmg">
                                         <span>Focus dps on main target</span>
@@ -1371,7 +1371,7 @@
                                     <label><input type="checkbox" v-model="config.pre_mirror_image">
                                         <span>Mirror Image</span>
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="form-item" v-if="config.talents.water_elemental">
                                     <label><input type="checkbox" v-model="config.pre_water_elemental">
                                         <span>Water Elemental</span>
@@ -1392,7 +1392,7 @@
                                             Dark Rune will be popped with Arcane Power if no timing is specified.
                                         </help>
                                     </label>
-                                </div> -->
+                                </div>
                                 <div class="form-item" v-if="!aoeRotation">
                                     <label><input type="checkbox" v-model="config.pre_cast">
                                         <span>Pre-cast main spell</span>
