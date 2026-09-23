@@ -90,6 +90,7 @@ struct Config
     int rot_abs_ap = 0;
     int rot_mb_below_ab = 0;
     double rot_mb_mana = 0;
+    bool rot_mb_cancel = false;
     bool rot_ice_lance = false;
     bool rot_brain_freeze_fireball = false;
     double rot_brain_freeze_hold = 15;

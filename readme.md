@@ -17,5 +17,6 @@ Requirements for frontend
 
 Standing in the root folder of the project.\
 Build backend: `$ make`\
+Windows (bc Smart App Control) `python %EMSDK%\upstream\emscripten\em++.py`\
 Build frontend: `$ npm run build`\
 Frontend development: `$ npm run dev`

@@ -58,6 +58,21 @@ a {
     }
 }
 
+.histog {
+    height: 100%;
+}
+
+.histogram {
+    position: relative;
+    height: calc(100% - 24px);
+    padding: 12px 16px;
+
+    .empty {
+        padding: 24px 8px;
+        opacity: 0.7;
+    }
+}
+
 .timeline {
     .graph {
         padding-left: 75px;

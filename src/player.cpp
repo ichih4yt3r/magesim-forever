@@ -859,7 +859,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         }
     }
 
-    if (spell->id == spell::MIRROR_IMAGE) {
+    /* if (spell->id == spell::MIRROR_IMAGE) {
         int images = 3;
         if (glyphs.mirror_image)
             images++;
@@ -882,7 +882,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         else if (talents.enduring_winter)
             action.unit->duration += talents.enduring_winter * 5.0;
         actions.push_back(std::move(action));
-    }
+    }*/
 
     if (config.t8_2set && !hasCooldown(cooldown::PRAXIS)) {
         if (spell->id == spell::ARCANE_BLAST ||
@@ -937,11 +937,11 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
 
         // Confirmed - on harmful spell cast
         // Also procs on ignite application and living bomb explosion
-        if (config.nibelung_hc && !hasCooldown(cooldown::NIBELUNG_HC) && random<int>(0, 49) == 0)
+        /*if (config.nibelung_hc && !hasCooldown(cooldown::NIBELUNG_HC) && random<int>(0, 49) == 0)
             actions.push_back(spellCooldownAction<spell::ValkyrProtector, cooldown::NibelungHc>());
         if (config.nibelung_nm && !hasCooldown(cooldown::NIBELUNG_NM) && random<int>(0, 49) == 0)
             actions.push_back(spellCooldownAction<spell::ValkyrGuardian, cooldown::NibelungNm>());
-
+        */
         // Unconfirmed - on spell cast ?
         if (hasTrinkets(TRINKET_SOLACE_FALLEN_HC, TRINKET_SOLACE_DEFEATED_HC)) {
             actions.push_back(buffAction<buff::EnergizedHc>());
@@ -970,7 +970,7 @@ std::vector<action::Action> Player::onProcSuccess(const State& state, std::share
 {
     auto actions = Unit::onProcSuccess(state, spell, target);
 
-    if (spell->id == spell::VALKYR_PROTECTOR) {
+    /*if (spell->id == spell::VALKYR_PROTECTOR) {
         action::Action action{ action::TYPE_UNIT };
         action.unit = std::make_shared<unit::ValkyrProtector>(config, stats);
         actions.push_back(std::move(action));
@@ -979,7 +979,7 @@ std::vector<action::Action> Player::onProcSuccess(const State& state, std::share
         action::Action action{ action::TYPE_UNIT };
         action.unit = std::make_shared<unit::ValkyrGuardian>(config, stats);
         actions.push_back(std::move(action));
-    }
+    }*/
 
     return actions;
 }
@@ -1070,10 +1070,11 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
         if (hasTrinkets(TRINKET_FETISH_VOLATILE_POWER_NM, TRINKET_TALISMAN_VOLATILE_POWER_NM) && hasBuff(buff::VOLATILE_POWER_NM))
             actions.push_back(buffAction<buff::VolatilityNm>());
 
-        if (config.nibelung_hc && !hasCooldown(cooldown::NIBELUNG_HC) && random<int>(0, 49) == 0)
+        /*if (config.nibelung_hc && !hasCooldown(cooldown::NIBELUNG_HC) && random<int>(0, 49) == 0)
             actions.push_back(spellCooldownAction<spell::ValkyrProtector, cooldown::NibelungHc>());
         if (config.nibelung_nm && !hasCooldown(cooldown::NIBELUNG_NM) && random<int>(0, 49) == 0)
             actions.push_back(spellCooldownAction<spell::ValkyrGuardian, cooldown::NibelungNm>());
+            */
     }
 
     if (instance.result != spell::MISS) {
@@ -1848,16 +1849,17 @@ action::Action Player::useCooldown(const State& state)
         if (talents.presence_of_mind && !hasCooldown(cooldown::PRESENCE_OF_MIND) && !hasBuff(buff::ARCANE_POWER) && useTimingIfPossible("presence_of_mind", state)) {
             return buffCooldownAction<buff::PresenceOfMind, cooldown::PresenceOfMind>(true);
         }
-        else if (!hasCooldown(cooldown::MIRROR_IMAGE) && useTimingIfPossible("mirror_image", state, true)) {
+        /*else if (!hasCooldown(cooldown::MIRROR_IMAGE) && useTimingIfPossible("mirror_image", state, true)) {
             return spellCooldownAction<spell::MirrorImage, cooldown::MirrorImage>();
-        }
+        }*/
         return { action::TYPE_NONE };
     }
 
-    if (config.t10_4set && !hasCooldown(cooldown::MIRROR_IMAGE) && useTimingIfPossible("mirror_image", state) && state.duration - state.t >= 10.0) {
+    /*if (config.t10_4set && !hasCooldown(cooldown::MIRROR_IMAGE) && useTimingIfPossible("mirror_image", state) && state.duration - state.t >= 10.0) {
         return spellCooldownAction<spell::MirrorImage, cooldown::MirrorImage>();
     }
-    else if (talents.arcane_power && !hasCooldown(cooldown::ARCANE_POWER) && !hasBuff(buff::PRESENCE_OF_MIND) && useTimingIfPossible("arcane_power", state)) {
+    else*/ 
+    if (talents.arcane_power && !hasCooldown(cooldown::ARCANE_POWER) && !hasBuff(buff::PRESENCE_OF_MIND) && useTimingIfPossible("arcane_power", state)) {
         auto action = buffAction<buff::ArcanePower>(true, glyphs.arcane_power);
         action.cooldown = std::make_shared<cooldown::ArcanePower>();
         return action;
@@ -1891,9 +1893,9 @@ action::Action Player::useCooldown(const State& state)
     else if (race == RACE_BLOOD_ELF && !hasCooldown(cooldown::ARCANE_TORRENT) && manaPercent() <= 94.0 && useTimingIfPossible("arcane_torrent", state)) {
         return spellAction<spell::ArcaneTorrent>();
     }
-    else if (config.hyperspeed_accelerators && !hasCooldown(cooldown::HYPERSPEED_ACCELERATION) && useTimingIfPossible("hyperspeed_accelerators", state)) {
+    /* else if (config.hyperspeed_accelerators && !hasCooldown(cooldown::HYPERSPEED_ACCELERATION) && useTimingIfPossible("hyperspeed_accelerators", state)) {
         return buffCooldownAction<buff::HyperspeedAcceleration, cooldown::HyperspeedAcceleration>(true);
-    }
+    } */
     else if (config.potion != POTION_NONE && config.potion != POTION_MANA && !hasCooldown(cooldown::POTION) && useTimingIfPossible("potion", state)) {
         action::Action action { action::TYPE_POTION };
         action.potion = config.potion;
@@ -1942,12 +1944,12 @@ action::Action Player::useCooldown(const State& state)
     else if (!hasCooldown(cooldown::EVOCATION) && useTimingIfPossible("evocation", state, true)) {
         return spellAction<spell::Evocation>(evocationTicks());
     }
-    else if (talents.water_elemental && !hasCooldown(cooldown::WATER_ELEMENTAL) && !state.hasUnit(unit::WATER_ELEMENTAL) && useTimingIfPossible("water_elemental", state)) {
+    /*else if (talents.water_elemental && !hasCooldown(cooldown::WATER_ELEMENTAL) && !state.hasUnit(unit::WATER_ELEMENTAL) && useTimingIfPossible("water_elemental", state)) {
         return spellCooldownAction<spell::WaterElemental, cooldown::WaterElemental>();
     }
     else if (!hasCooldown(cooldown::MIRROR_IMAGE) && useTimingIfPossible("mirror_image", state, true)) {
         return spellCooldownAction<spell::MirrorImage, cooldown::MirrorImage>();
-    }
+    }*/
 
     return { action::TYPE_NONE };
 }
@@ -1976,6 +1978,50 @@ bool Player::canBlast(const State& state) const
     return true;
 }
 
+bool Player::shouldUseMissileBarrage(const State& state)
+{
+    if (config.rotation != ROTATION_ST_AB_AM && config.rotation != ROTATION_ST_AB_AM_BARRAGE)
+        return false;
+
+    if (!canReactTo(buff::MISSILE_BARRAGE, state.t))
+        return false;
+
+    if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND))
+        return false;
+
+    auto ab = std::make_shared<spell::ArcaneBlast>();
+    if (state.duration - state.t < castTime(ab) && !hasCooldown(cooldown::FIRE_BLAST))
+        return false;
+
+    // Same priority order as nextAction AB/AM rotation
+    if (config.t10_2set && !hasBuff(buff::BLOODLUST))
+        return true;
+
+    if (canBlast(state))
+        return false;
+
+    if (!hasBuff(buff::ARCANE_POWER) && isTimingReadySoon("arcane_power", state, 5) && state.t < 10)
+        return false;
+
+    if (hasBuff(buff::ARCANE_POWER) && config.rot_abs_ap + 4 > ab_streak && state.t < 60)
+        return false;
+
+    int ab_stacks = 4;
+    if (config.rot_ab3_mana > 0 && manaPercent() < config.rot_ab3_mana)
+        ab_stacks = 3;
+
+    if (config.rot_mb_below_ab && buffStacks(buff::ARCANE_BLAST) < config.rot_mb_below_ab)
+        return true;
+
+    if (config.rot_mb_mana && manaPercent() < config.rot_mb_mana)
+        return true;
+
+    if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks)
+        return true;
+
+    return false;
+}
+
 bool Player::shouldPreCast() const
 {
     return config.pre_cast && config.rotation < ROTATION_AOE_AE;
@@ -2002,9 +2048,9 @@ double Player::preCombatDuration(const State& state)
     double t = 0;
     double _gcd = gcd();
 
-    if (config.pre_mirror_image)
+    /* if (config.pre_mirror_image)
         t += _gcd;
-
+    
     if (talents.water_elemental && config.pre_water_elemental)
         t += _gcd;
 
@@ -2012,7 +2058,7 @@ double Player::preCombatDuration(const State& state)
         t += _gcd;
         if (config.pre_mana_incanters_absorption)
             t += _gcd;
-    }
+    }*/
 
     if (shouldPreCast()) {
         auto spell = preCastSpell();

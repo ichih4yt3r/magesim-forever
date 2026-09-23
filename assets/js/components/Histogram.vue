@@ -1,101 +1,113 @@
 <template>
     <div class="histogram">
-        <canvas ref="canvas"></canvas>
+        <Bar v-if="chartData" :data="chartData" :options="chartOptions" />
+        <div class="empty" v-else>No distribution data for this result.</div>
     </div>
 </template>
 
 <script>
-    import { Bar } from 'vue-chartjs';
+    import { Bar } from "vue-chartjs";
+    import {
+        Chart as ChartJS,
+        BarController,
+        BarElement,
+        CategoryScale,
+        LinearScale,
+    } from "chart.js";
+
+    ChartJS.register(BarController, BarElement, CategoryScale, LinearScale);
+
+    const BIN_SIZE = 50;
 
     export default {
-        mixins: [Bar],
-
-        mounted() {
-            this.draw();
-        },
-
-        watch: {
-            data() {
-                this.draw();
-            }
-        },
+        components: { Bar },
 
         props: ["data", "avg"],
 
-        methods: {
-            draw() {
-                var bin_size = 50;
-
-                var data = {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: "#08f",
-                        borderColor: "#05c",
-                        borderWidth: 1,
-                        barPercentage: 1.25,
-                    }],
-                };
-
-                var avg = Math.floor(this.avg/bin_size)*bin_size;
-
-                var keys = _.keys(this.data).sort((a,b) => a-b);
-                var first = parseInt(keys[0]);
-                var last = parseInt(_.last(keys));
-                for (var i=first; i<=last; i+= bin_size) {
-                    data.labels.push(i);
-                    data.datasets[0].data.push(_.get(this.data, i.toString(), "0"));
-                }
-                data.labels.push(i);
-
-                var options = {
-                    legend: {
-                        display: false,
-                    },
-                    tooltips: {
-                        enabled: false,
+        data() {
+            return {
+                chartOptions: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    color: "rgba(255,255,255,0.75)",
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            enabled: false,
+                        },
                     },
                     scales: {
-                        xAxes: [
-                            {
-                                display: false,
-                                ticks: {
-                                    max: data.labels[data.labels.length-2],
-                                }
-                            },
-                            {
+                        x: {
+                            offset: true,
+                            title: {
                                 display: true,
-                                scaleLabel: {
-                                    display: true,
-                                    labelString: "DPS",
-                                },
-                                gridLines: {
-                                    color: "rgba(255,255,255,0.05)",
-                                },
-                                ticks: {
-                                    autoSkip: false,
-                                    max: data.labels[data.labels.length-1],
-                                }
-                            }
-                        ],
-                        yAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Iterations",
+                                text: "DPS",
                             },
-                            gridLines: {
+                            grid: {
+                                color: "rgba(255,255,255,0.05)",
+                            },
+                            ticks: {
+                                autoSkip: false,
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Iterations",
+                            },
+                            grid: {
                                 color: "rgba(255,255,255,0.05)",
                             },
                             ticks: {
                                 maxTicksLimit: 20,
-                                beginAtZero: true,
-                            }
-                        }]
-                    }
-                };
+                            },
+                        },
+                    },
+                },
+            };
+        },
 
-                this.renderChart(data, options);
-            }
-        }
+        computed: {
+            chartData() {
+                if (!this.data || typeof this.data != "object")
+                    return null;
+
+                var keys = Object.keys(this.data)
+                    .map(key => parseInt(key, 10))
+                    .filter(key => !isNaN(key))
+                    .sort((a, b) => a - b);
+
+                if (!keys.length)
+                    return null;
+
+                var labels = [];
+                var counts = [];
+                var first = keys[0];
+                var last = keys[keys.length - 1];
+
+                for (var i = first; i <= last; i += BIN_SIZE) {
+                    labels.push(i);
+                    counts.push(Number(this.data[i]) || 0);
+                }
+
+                var avgBin = Math.floor(this.avg / BIN_SIZE) * BIN_SIZE;
+
+                return {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: labels.map(bin => bin == avgBin ? "#4af" : "#08f"),
+                        borderColor: labels.map(bin => bin == avgBin ? "#8cf" : "#05c"),
+                        borderWidth: 1,
+                        barPercentage: 1,
+                        categoryPercentage: 1,
+                    }],
+                };
+            },
+        },
     }
 </script>

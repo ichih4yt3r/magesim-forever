@@ -166,6 +166,8 @@ public:
 
     bool canBlast(const State& state) const;
 
+    bool shouldUseMissileBarrage(const State& state);
+
     bool shouldPreCast() const;
 
     std::shared_ptr<spell::Spell> preCastSpell();

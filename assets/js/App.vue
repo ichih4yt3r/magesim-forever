@@ -776,7 +776,7 @@
                             <fieldset class="config-general">
                                 <legend>General</legend>
                                 <div class="form-item">
-                                    <label>Quick spec</label>
+                                    <label>Quick Spec</label>
                                     <span class="btn secondary" @click="setSpec('arcane')">Arcane</span>
                                     <span class="btn secondary" @click="setSpec('fire')">Fire</span>
                                     <span class="btn secondary" @click="setSpec('frost')">Frost</span>
@@ -943,7 +943,7 @@
                             <fieldset class="config-rotation">
                                 <legend>Rotation</legend>
                                 <div class="form-item">
-                                    <label>Main rotation</label>
+                                    <label>Main Rotation</label>
                                     <select v-model="config.rotation">
                                         <option :value="rotations.ROTATION_ST_FROSTFIRE">Frostfire Bolt</option>
                                         <option :value="rotations.ROTATION_ST_AB_AM">Arcane</option>
@@ -991,6 +991,15 @@
                                             <help>This can be useful to conserve mana</help>
                                         </label>
                                         <input type="text" v-model.number="config.rot_mb_mana">
+                                    </div>
+                                    <div class="form-item">
+                                        <label><input type="checkbox" v-model="config.rot_mb_cancel">
+                                            <span>Cancel AB for Missile Barrage</span>
+                                            <help>
+                                                Stopcasting an in-progress Arcane Blast to use Missile Barrage once it becomes reactable.<br>
+                                                Uses the Reaction time setting (ms) for when the proc is noticed.
+                                            </help>
+                                        </label>
                                     </div>
                                 </template>
                                 <template v-if="config.rotation == rotations.ROTATION_ST_FROST">
@@ -1358,7 +1367,7 @@
                                         <option :value="potions.POTION_FLAME_CAP">Flame Cap</option>
                                     </select>
                                 </div>
-                                <div class="form-item">
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.pre_mirror_image">
                                         <span>Mirror Image</span>
                                     </label>
@@ -1383,7 +1392,7 @@
                                             Dark Rune will be popped with Arcane Power if no timing is specified.
                                         </help>
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="form-item" v-if="!aoeRotation">
                                     <label><input type="checkbox" v-model="config.pre_cast">
                                         <span>Pre-cast main spell</span>
@@ -2049,6 +2058,7 @@
                 rot_abs_ap: 0,
                 rot_mb_below_ab: 0,
                 rot_mb_mana: 0,
+                rot_mb_cancel: false,
                 rot_ice_lance: false,
                 rot_brain_freeze_fireball: false,
                 rot_brain_freeze_hold: 15,
@@ -2623,16 +2633,16 @@
                     title: "Evocation",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_nature_purge.jpg",
                 });
-                timings.push({
+                /* timings.push({
                     name: "mirror_image",
                     title: "Mirror Image",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_magic_lesserinvisibilty.jpg",
-                });
-                timings.push({
+                }); */
+                /* timings.push({
                     name: "water_elemental",
                     title: "Water Elemental",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_frost_summonwaterelemental_2.jpg",
-                });
+                }); */
                 timings.push({
                     name: "berserking",
                     title: "Berserking",
@@ -2683,11 +2693,11 @@
                     title: "Cold Snap",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_frost_wizardmark.jpg",
                 });
-                timings.push({
+                /* timings.push({
                     name: "hyperspeed_accelerators",
                     title: "Hyperspeed Accelerators",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/inv_misc_enggizmos_04.jpg",
-                });
+                });*/
                 timings.push({
                     name: "sapper_charge",
                     title: "Sapper Charge",
@@ -3837,8 +3847,8 @@
                 else
                     this.config.ashen_band = false;
 
-                this.config.nibelung_hc = this.isEquipped("weapon", this.items.ids.NIBELUNG_HC);
-                this.config.nibelung_nm = this.isEquipped("weapon", this.items.ids.NIBELUNG_NM);
+                /* this.config.nibelung_hc = this.isEquipped("weapon", this.items.ids.NIBELUNG_HC);
+                this.config.nibelung_nm = this.isEquipped("weapon", this.items.ids.NIBELUNG_NM);*/ 
 
                 this.config.rot_black_magic_ench = 0;
                 if (this.config.rot_black_magic && !this.canBlackMagicWeave)
@@ -3994,7 +4004,7 @@
                 // Expansive mind is 5% more mana only, not int. if (this.config.race == this.races.RACE_GNOME)
                    // stats.intellect*= 1.05;
                 if (this.config.race == this.races.RACE_HUMAN)
-                    stats.spirit*= 1.03;
+                    stats.spirit*= 1.05;
                 if (this.config.blessing_of_kings) {
                     stats.intellect*= 1.1;
                     stats.spirit*= 1.1;
@@ -4671,23 +4681,19 @@
 
             setSpec(spec) {
                 if (spec == "arcane") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1055205023100311531-03-0550000001_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_AB_AM;
                 }
-                else if (spec == "arcane_barrage") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/230005133100330150323102505321-03-023203001_001wr211q1b21q1y31rj441rj551rj7";
-                    this.config.rotation = constants.rotations.ROTATION_ST_AB_AM_BARRAGE;
-                }
                 else if (spec == "fire") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/23000503310003-0055030012303330053120300351_001q1g11xkk21q1y31rj441rj551rj7";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1050205002-00552030130133051-005_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FIRE;
                 }
                 else if (spec == "frost") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/23000503110003--0533030310233100030152231351_00258s11q1j21q1y31kd841rj451rj5";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v10502050030003--0555000331020001251_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROST;
                 }
                 else if (spec == "ffb") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/-2305032012303330053120300351-023303031003_001vrn11xkk21q1y31rj441rj551rj6";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1-0355003003003304-00550003310003002_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROSTFIRE;
                 }
 

@@ -304,6 +304,9 @@ void Simulation::tick(Event& event)
         case EVENT_INTERRUPTION_END:
             onInterruptionEnd(event.interruption_index);
             break;
+        case EVENT_MB_CANCEL:
+            onMbCancel(event.unit);
+            break;
         case EVENT_SLAMMER_START:
             onSlammerStart(event.unit);
             break;
@@ -559,6 +562,16 @@ void Simulation::pushInterruption(int index)
     end.t = config.interruptions[index].t + config.interruptions[index].duration;
     end.interruption_index = index;
     push(end);
+}
+
+void Simulation::pushMbCancel(std::shared_ptr<unit::Unit> unit, double t)
+{
+    Event event;
+    event.type = EVENT_MB_CANCEL;
+    event.unit = unit;
+    event.t = t;
+
+    push(event);
 }
 
 void Simulation::onAction(std::shared_ptr<unit::Unit> unit, action::Action &action)
@@ -979,6 +992,33 @@ void Simulation::onInterruptionEnd(int index)
     }
 }
 
+void Simulation::onMbCancel(std::shared_ptr<unit::Unit> unit)
+{
+    if (!config.rot_mb_cancel || unit->id != player->id)
+        return;
+
+    if (!player->shouldUseMissileBarrage(state))
+        return;
+
+    bool cancelled = false;
+    for (auto i = queue.begin(); i != queue.end();) {
+        if (i->unit && i->unit->id == unit->id && i->spell && i->spell->id == spell::ARCANE_BLAST &&
+            (i->type == EVENT_CAST_FINISH || i->type == EVENT_WAIT))
+        {
+            i = queue.erase(i);
+            cancelled = true;
+        }
+        else {
+            ++i;
+        }
+    }
+
+    if (cancelled) {
+        addLog(unit, LOG_WAIT, unit->name + " stopcasting Arcane Blast for Missile Barrage");
+        nextAction(unit);
+    }
+}
+
 void Simulation::onSlammerStart(std::shared_ptr<unit::Unit> unit)
 {
     addLog(unit, LOG_NONE, "Sulfuron Slammer consumed");
@@ -1057,6 +1097,9 @@ void Simulation::onBuffGain(std::shared_ptr<unit::Unit> unit, std::shared_ptr<bu
 
     if (stacks != old_stacks || buff->show_refresh)
         logBuffGain(unit, buff, stacks);
+
+    if (config.rot_mb_cancel && buff->id == buff::MISSILE_BARRAGE && old_stacks < 1 && unit->id == player->id)
+        pushMbCancel(unit, config.reaction_time / 1000.0);
 
     auto actions = unit->onBuffGain(state, buff);
     processActions(unit, actions);

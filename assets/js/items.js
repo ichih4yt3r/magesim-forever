@@ -1041,7 +1041,7 @@ let enchants = {
         { id: 44555, enchantmentId: 1119, title: "Exceptional Intellect", int: 16 },
     ],
     hands: [
-        { id: ids.HYPERSPEED_ACCELERATORS, enchantmentId: 3604, title: "Hyperspeed Accelerators" },
+        // { id: ids.HYPERSPEED_ACCELERATORS, enchantmentId: 3604, title: "Hyperspeed Accelerators" },
         { id: 44592, enchantmentId: 3246, title: "Exceptional Spellpower", sp: 28 },
         { id: 44488, enchantmentId: 3234, title: "Precision", hit: 20 },
     ],

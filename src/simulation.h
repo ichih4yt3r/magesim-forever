@@ -127,6 +127,8 @@ public:
 
     void pushInterruption(int index);
 
+    void pushMbCancel(std::shared_ptr<unit::Unit> unit, double t);
+
     void onAction(std::shared_ptr<unit::Unit> unit, action::Action & action);
 
     bool nextAction(std::shared_ptr<unit::Unit> unit);
@@ -172,6 +174,8 @@ public:
     void onInterruption(int index);
 
     void onInterruptionEnd(int index);
+
+    void onMbCancel(std::shared_ptr<unit::Unit> unit);
 
     void onSlammerStart(std::shared_ptr<unit::Unit> unit);
 
