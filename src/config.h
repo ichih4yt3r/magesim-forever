@@ -15,7 +15,7 @@ struct Config
     int targets = 1;
     int dot_targets = 1;
     int target_resistance = 0;
-    int target_level = 83;
+    int target_level = 63;
     double target_hp = 100;
     int distance = 20;
     int reaction_time = 300;

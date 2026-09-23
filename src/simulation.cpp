@@ -1273,7 +1273,7 @@ void Simulation::removeUnitEvents(std::shared_ptr<unit::Unit> unit)
 
 double Simulation::hitChance(std::shared_ptr<unit::Unit> unit, std::shared_ptr<spell::Spell> spell, std::shared_ptr<target::Target> target) const
 {
-    int dlevel = config.target_level - 80;
+    int dlevel = config.target_level - 60;
 
     double hit = 96.0 - dlevel;
 
@@ -1282,9 +1282,9 @@ double Simulation::hitChance(std::shared_ptr<unit::Unit> unit, std::shared_ptr<s
 
     hit += unit->hitChance(spell);
 
-    if (config.debuff_spell_hit && unit->get_raid_debuffs)
+    /*if (config.debuff_spell_hit && unit->get_raid_debuffs)
         hit += 3.0;
-
+    */
     return std::min(hit, 100.0);
 }
 

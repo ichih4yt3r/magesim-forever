@@ -280,9 +280,9 @@
                         </div>
                     </div>
                 </div>
-                <a class="github" href="https://github.com/Cheesehyvel/magesim-forever" target="_blank"></a>
+                <a class="github" href="https://github.com/ichih4yt3r/magesim-forever" target="_blank"></a>
                 <div class="donate">
-                    <a href="https://www.paypal.com/donate/?hosted_button_id=CU9RF4LCMW8W6" target="_blank">
+                    <a href="www.google.com" target="_blank">
                         Donate
                     </a>
                 </div>
@@ -817,10 +817,10 @@
                                     <div class="form-item">
                                         <label>Target level</label>
                                         <select v-model="config.target_level">
-                                            <option :value="83">83</option>
-                                            <option :value="82">82</option>
-                                            <option :value="81">81</option>
-                                            <option :value="80">80</option>
+                                            <option :value="63">63</option>
+                                            <option :value="62">62</option>
+                                            <option :value="61">61</option>
+                                            <option :value="60">60</option>
                                         </select>
                                     </div>
                                     <div class="form-item">
@@ -894,14 +894,14 @@
                                     </label>
                                     <input type="text" v-model.number="config.stat_weight_increment">
                                 </div>
-                                <div class="form-item">
+                                <!-- <div class="form-item">
                                     <label>Design</label>
                                     <select @input="onDesignInput($event)">
                                         <option :value="0">- Choose -</option>
-                                        <option :value="1">Wotlk</option>
+                                        <option :value="1">Forever</option>
                                         <option :value="2">Alternative</option>
                                     </select>
-                                </div>
+                                </div> --> 
                                 <div class="form-item" v-if="config.targets > 1">
                                     <label><input type="checkbox" v-model="config.only_main_dmg">
                                         <span>Focus dps on main target</span>
