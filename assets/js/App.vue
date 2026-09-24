@@ -1958,7 +1958,7 @@
                 targets: 1,
                 dot_targets: 0,
                 target_resistance: 0,
-                target_level: 83,
+                target_level: 63,
                 target_hp: 100,
                 distance: 20,
                 reaction_time: 300,
@@ -5820,6 +5820,12 @@
                     this.config.timings = [];
                     this.config.interruptions = [];
                     _.merge(config, _.pick(profile.config, _.keys(config)));
+                    // Old profiles stored WotLK boss levels (80-83). The hit
+                    // formula is now vanilla (player 60), so those values miss 100%.
+                    if (config.target_level >= 80 && config.target_level <= 83)
+                        config.target_level -= 20;
+                    if (config.target_level < 60 || config.target_level > 63)
+                        config.target_level = 63;
                     _.merge(this.config, config);
                     this.onLoadConfig(profile.config);
                     this.profile_status.config = true;
