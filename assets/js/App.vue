@@ -101,7 +101,18 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span>{{ round(display_stats.crit, 2) }}%</span>
+                                    <span>{{ roundFixed(display_stats.crit, 2) }}%</span>
+                                    <tooltip position="r">
+                                        <div class="tal">
+                                            <div>{{ roundFixed(display_stats.intellect / 59.5, 2) }}% from intellect</div>
+                                            <div v-if="config.talents.arcane_instability">{{ config.talents.arcane_instability }}% from Arcane Instability</div>
+                                            <div v-if="config.talents.pyromaniac">{{ config.talents.pyromaniac }}% from Pyromaniac</div>
+                                            <div v-if="config.focus_magic">3% from Focus Magic</div>
+                                            <div v-if="config.buff_spell_crit">5% from spell crit buff</div>
+                                            <div v-if="config.debuff_spell_crit">5% from spell crit debuff</div>
+                                            <div v-if="config.debuff_crit">3% from crit debuff</div>
+                                        </div>
+                                    </tooltip>
                                 </td>
                             </tr>
                             <tr>
@@ -383,7 +394,7 @@
                                                     <sort-link v-model="item_sort" name="sp" order="desc">{{ splitviewShort("Spell power", "SP") }}</sort-link>
                                                 </th>
                                                 <th>
-                                                    <sort-link v-model="item_sort" name="crit" order="desc">{{ splitviewShort("Crit rating", "Crit") }}</sort-link>
+                                                    <sort-link v-model="item_sort" name="crit" order="desc">{{ splitviewShort("Crit %", "Crit") }}</sort-link>
                                                 </th>
                                                 <th>
                                                     <sort-link v-model="item_sort" name="hit" order="desc">{{ splitviewShort("Hit rating", "Hit") }}</sort-link>
@@ -474,7 +485,7 @@
                                             <tr>
                                                 <th>Enchant</th>
                                                 <th>Spell power</th>
-                                                <th>Crit rating</th>
+                                                <th>Crit %</th>
                                                 <th>Hit rating</th>
                                                 <th>Haste rating</th>
                                                 <th>Intellect</th>
@@ -1811,7 +1822,7 @@
                             <input type="number" v-model.number="custom_item.sp">
                         </div>
                         <div class="form-item form-row">
-                            <label>Crit rating</label>
+                            <label>Crit %</label>
                             <input type="number" v-model.number="custom_item.crit">
                         </div>
                         <div class="form-item form-row">
@@ -4017,11 +4028,12 @@
 
                 if (this.config.race == this.races.RACE_DRAENEI || this.faction == "alliance" && this.config.heroic_presence)
                     stats.hit+= 1;
-                stats.crit+= this.config.talents.arcane_instability;
-                stats.crit+= this.config.talents.pyromaniac;
-                stats.hit+= this.config.talents.precision;
+                stats.crit+= this.config.talents.arcane_instability || 0;
+                stats.crit+= this.config.talents.pyromaniac || 0;
+                stats.hit+= this.config.talents.precision || 0;
 
-                stats.crit+= stats.intellect/166.6667;
+                // Level 60 mage: 1% spell crit per 59.5 intellect, plus the 0.91% class base.
+                stats.crit+= stats.intellect/59.5;
 
                 this.config.stats = stats;
             },
