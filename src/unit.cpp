@@ -286,10 +286,6 @@ double Unit::castTime(std::shared_ptr<spell::Spell> spell) const
 double Unit::castHaste() const
 {
     double haste = 1;
-    double rating = getHasteRating();
-
-    if (rating)
-        haste += hasteRatingToHaste(rating) / 100.0;
 
     if (stats.haste)
         haste *= 1 + stats.haste / 100.0;

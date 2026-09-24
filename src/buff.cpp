@@ -274,7 +274,6 @@ WildMagic::WildMagic()
     name = "Wild Magic";
     duration = 15;
     stats.spell_power = 200;
-    stats.crit = critRatingToChance(200);
 }
 
 ManaSurge::ManaSurge()

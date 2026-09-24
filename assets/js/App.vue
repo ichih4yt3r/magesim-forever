@@ -93,31 +93,29 @@
                                 <td>{{ display_stats.spell_power }}</td>
                             </tr>
                             <tr>
-                                <td :class="[config.custom_stats.crit_rating ? 'active' : '']">
+                                <td :class="[config.custom_stats.crit ? 'active' : '']">
                                     Crit
-                                    <span v-if="config.custom_stats.crit_rating">
-                                        ({{ plusMinus(config.custom_stats.crit_rating) }})
-                                        <tooltip position="t">{{ config.custom_stats.crit_rating }} bonus crit rating</tooltip>
+                                    <span v-if="config.custom_stats.crit">
+                                        ({{ plusMinus(config.custom_stats.crit) }})
+                                        <tooltip position="t">{{ config.custom_stats.crit }}% bonus crit</tooltip>
                                     </span>
                                 </td>
                                 <td>
                                     <span>{{ round(display_stats.crit, 2) }}%</span>
-                                    <tooltip position="r">{{ display_stats.crit_rating }} crit rating</tooltip>
                                 </td>
                             </tr>
                             <tr>
-                                <td :class="[config.custom_stats.hit_rating ? 'active' : '']">
+                                <td :class="[config.custom_stats.hit ? 'active' : '']">
                                     Hit
-                                    <span v-if="config.custom_stats.hit_rating">
-                                        ({{ plusMinus(config.custom_stats.hit_rating) }})
-                                        <tooltip position="t">{{ config.custom_stats.hit_rating }} bonus hit rating</tooltip>
+                                    <span v-if="config.custom_stats.hit">
+                                        ({{ plusMinus(config.custom_stats.hit) }})
+                                        <tooltip position="t">{{ config.custom_stats.hit }}% bonus hit</tooltip>
                                     </span>
                                 </td>
                                 <td>
                                     <span>{{ round(display_stats.hit, 2) }}%</span>
                                     <tooltip position="r">
                                         <div class="tal">
-                                            <div>{{ round(hitRatingToChance(display_stats.hit_rating),2) }}% from {{ display_stats.hit_rating }} hit rating</div>
                                             <div v-if="config.talents.precision">{{ config.talents.precision }}% from Precision</div>
                                             <div v-if="config.talents.precision && config.rotation == rotations.ROTATION_ST_FROSTFIRE">{{ config.talents.precision }}% extra from Precision (ffb only)</div>
                                             <div v-if="config.debuff_spell_hit">3% from spell hit debuff</div>
@@ -128,16 +126,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td :class="[config.custom_stats.haste_rating ? 'active' : '']">
+                                <td :class="[config.custom_stats.haste ? 'active' : '']">
                                     Haste
-                                    <span v-if="config.custom_stats.haste_rating">
-                                        ({{ plusMinus(config.custom_stats.haste_rating) }})
-                                        <tooltip position="t">{{ config.custom_stats.haste_rating }} bonus haste rating</tooltip>
+                                    <span v-if="config.custom_stats.haste">
+                                        ({{ plusMinus(config.custom_stats.haste) }})
+                                        <tooltip position="t">{{ config.custom_stats.haste }}% bonus haste</tooltip>
                                     </span>
                                 </td>
                                 <td>
                                     <span>{{ round(display_stats.haste, 2) }}%</span>
-                                    <tooltip position="r">{{ display_stats.haste_rating }} haste rating</tooltip>
                                 </td>
                             </tr>
                         </tbody>
@@ -163,9 +160,9 @@
                         <option value="spirit">Spirit (EP)</option>
                         <option value="mp5">Mp5 (EP)</option>
                         <option value="spell_power">Spell power (EP)</option>
-                        <option value="crit_rating">Crit rating (EP)</option>
-                        <option value="hit_rating">Hit rating (EP)</option>
-                        <option value="haste_rating">Haste rating (EP)</option>
+                        <option value="crit">Crit % (EP)</option>
+                        <option value="hit">Hit % (EP)</option>
+                        <option value="haste">Haste % (EP)</option>
                     </select>
                     <table class="simple mt-1">
                         <tbody>
@@ -185,17 +182,17 @@
                                 <td>Spell power</td>
                                 <td>{{ nullRound(epCalc.spell_power, 2) }}</td>
                             </tr>
-                            <tr @click="ep_weight = 'crit_rating'">
-                                <td>Crit rating</td>
-                                <td>{{ nullRound(epCalc.crit_rating, 2) }}</td>
+                            <tr @click="ep_weight = 'crit'">
+                                <td>Crit %</td>
+                                <td>{{ nullRound(epCalc.crit, 2) }}</td>
                             </tr>
-                            <tr @click="ep_weight = 'hit_rating'">
-                                <td>Hit rating</td>
-                                <td>{{ nullRound(epCalc.hit_rating, 2) }}</td>
+                            <tr @click="ep_weight = 'hit'">
+                                <td>Hit %</td>
+                                <td>{{ nullRound(epCalc.hit, 2) }}</td>
                             </tr>
-                            <tr @click="ep_weight = 'haste_rating'">
-                                <td>Haste rating</td>
-                                <td>{{ nullRound(epCalc.haste_rating, 2) }}</td>
+                            <tr @click="ep_weight = 'haste'">
+                                <td>Haste %</td>
+                                <td>{{ nullRound(epCalc.haste, 2) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1744,16 +1741,16 @@
                         <input type="number" v-model.number="config.custom_stats.spell_power">
                     </div>
                     <div class="form-item form-row">
-                        <label>Crit rating</label>
-                        <input type="number" v-model.number="config.custom_stats.crit_rating">
+                        <label>Crit %</label>
+                        <input type="number" v-model.number="config.custom_stats.crit">
                     </div>
                     <div class="form-item form-row">
-                        <label>Hit rating</label>
-                        <input type="number" v-model.number="config.custom_stats.hit_rating">
+                        <label>Hit %</label>
+                        <input type="number" v-model.number="config.custom_stats.hit">
                     </div>
                     <div class="form-item form-row">
-                        <label>Haste rating</label>
-                        <input type="number" v-model.number="config.custom_stats.haste_rating">
+                        <label>Haste %</label>
+                        <input type="number" v-model.number="config.custom_stats.haste">
                     </div>
                     <div class="form-item form-row">
                         <label>Mp5</label>
@@ -2089,9 +2086,9 @@
                     spirit: 0,
                     mp5: 0,
                     spell_power: 0,
-                    crit_rating: 0,
-                    hit_rating: 0,
-                    haste_rating: 0,
+                    crit: 0,
+                    hit: 0,
+                    haste: 0,
                 },
 
                 talents: {
@@ -2569,9 +2566,9 @@
                     spirit: null,
                     mp5: null,
                     spell_power: null,
-                    crit_rating: null,
-                    hit_rating: null,
-                    haste_rating: null,
+                    crit: null,
+                    hit: null,
+                    haste: null,
                 };
 
                 if (!this.ep_result.base)
@@ -3370,9 +3367,9 @@
                     spirit: null,
                     mp5: null,
                     spell_power: null,
-                    crit_rating: null,
-                    hit_rating: null,
-                    haste_rating: null,
+                    crit: null,
+                    hit: null,
+                    haste: null,
                 };
 
                 var rng_seed = Math.round(Math.random() * 100000);
@@ -3780,9 +3777,9 @@
                 stats.spirit+= item_stats.spi;
                 stats.mp5+= item_stats.mp5;
                 stats.spell_power+= item_stats.sp;
-                stats.crit_rating = item_stats.crit;
-                stats.hit_rating = item_stats.hit;
-                stats.haste_rating = item_stats.haste;
+                stats.crit+= item_stats.crit;
+                stats.hit+= item_stats.hit;
+                stats.haste+= item_stats.haste;
 
                 this.config.stats = stats;
             },
@@ -4024,10 +4021,7 @@
                 stats.crit+= this.config.talents.pyromaniac;
                 stats.hit+= this.config.talents.precision;
 
-                // Calculate percentages
                 stats.crit+= stats.intellect/166.6667;
-                stats.crit+= this.critRatingToChance(stats.crit_rating);
-                stats.hit+= this.hitRatingToChance(stats.hit_rating);
 
                 this.config.stats = stats;
             },
@@ -4072,21 +4066,6 @@
                 // Debuff: Crit
                 if (this.config.debuff_crit)
                     stats.crit+= 3;
-
-                if (this.config.molten_armor) {
-                    var multi = 0.35;
-                    if (this.config.glyphs.molten_armor)
-                        multi+= 0.2;
-                    if (this.numEquippedSet(this.items.ids.T9_SET) > 1)
-                        multi+= 0.15;
-                    var rating = Math.round(stats.spirit * multi);
-                    stats.crit_rating+= rating;
-                    stats.crit+= this.critRatingToChance(rating);
-                }
-
-                // Haste rating is a little special
-                // We need to pass the raw haste rating to the sim, so we calculate the final percentage here
-                stats.haste = this.multiplyHaste(stats.haste, this.hasteRatingToHaste(stats.haste_rating));
 
                 // Mana
                 stats.mana+= stats.intellect*15 - 280;
@@ -4168,18 +4147,6 @@
                 }
 
                 return url;
-            },
-
-            critRatingToChance(rating) {
-                return rating / 45.91;
-            },
-
-            hitRatingToChance(rating) {
-                return rating / 26.232;
-            },
-
-            hasteRatingToHaste(rating) {
-                return rating / 32.79;
             },
 
             multiplyHaste(h1, h2) {

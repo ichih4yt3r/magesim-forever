@@ -199,15 +199,6 @@ double Player::critChance(std::shared_ptr<spell::Spell> spell) const
 {
     double crit = Unit::critChance(spell);
 
-    if (config.molten_armor) {
-        double multi = 0.35;
-        if (glyphs.molten_armor)
-            multi += 0.2;
-        if (config.t9_2set)
-            multi += 0.15;
-        crit += critRatingToChance(round(getSpirit() * multi));
-    }
-
     if (spell->proc)
         return crit;
 
@@ -637,10 +628,6 @@ void Player::swapWeapons()
         }
         else if (config.rot_black_magic_ench == ENCHANT_WEAPON_MIGHTY_SPELLPOWER) {
             ench_stats.spell_power = 81;
-        }
-        else if (config.rot_black_magic_ench == ENCHANT_WEAPON_ACCURACY) {
-            ench_stats.hit = hitRatingToChance(25);
-            ench_stats.crit = critRatingToChance(25);
         }
 
         // Buff stats are reset every sim
