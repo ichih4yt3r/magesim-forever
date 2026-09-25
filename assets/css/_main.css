@@ -75,6 +75,8 @@ a {
 
 .timeline {
     .graph {
+        position: relative;
+        height: 280px;
         padding-left: 75px;
     }
 

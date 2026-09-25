@@ -2383,6 +2383,8 @@
             },
 
             canBlackMagicWeave() {
+                if (this.items.ids.BLACK_MAGIC == null)
+                    return false;
                 if (this.enchants.weapon == this.items.ids.BLACK_MAGIC)
                     return false;
                 if (!this.equipped.weapon)
@@ -2908,9 +2910,9 @@
                 if (this.config.talents.molten_fury)
                     buffs.push({id: constants.buffs.MOLTEN_FURY, name: "Molten Fury"});
 
-                if (this.enchants.weapon == this.items.ids.BLACK_MAGIC || this.config.rot_black_magic)
+                if (this.items.ids.BLACK_MAGIC != null && this.enchants.weapon == this.items.ids.BLACK_MAGIC || this.config.rot_black_magic)
                     buffs.push({id: constants.buffs.BLACK_MAGIC, name: "Black Magic"});
-                if (this.enchants.back == this.items.ids.LIGHTWEAVE_EMBROIDERY)
+                if (this.items.ids.LIGHTWEAVE_EMBROIDERY != null && this.enchants.back == this.items.ids.LIGHTWEAVE_EMBROIDERY)
                     buffs.push({id: constants.buffs.LIGHTWEAVE, name: "Lightweave Embroidery"});
 
                 if (this.numEquippedSet(this.items.ids.T8_SET) > 1)
@@ -2948,12 +2950,12 @@
                     buffs.push({id: constants.buffs.CHARRED_TWILIGHT_SCALE_NM, name: "Glowing Twilight Scale"});
                 if (this.isEquipped("trinket", this.items.ids.TRINKET_PURIFIED_LUNAR_DUST))
                     buffs.push({id: constants.buffs.PURIFIED_LUNAR_DUST, name: "Purified Lunar Dust"});
-
+                
                 if (this.isEquipped("finger", this.items.ids.ASHEN_BAND_ENDLESS_DESTRUCTION) || this.isEquipped("finger", this.items.ids.ASHEN_BAND_UNMATCHED_DESTRUCTION))
                     buffs.push({id: constants.buffs.ASHEN_BAND, name: "Frostforged Sage (Ashen Band)"});
                 else if (this.isEquipped("finger", this.items.ids.ASHEN_BAND_ENDLESS_WISDOM) || this.isEquipped("finger", this.items.ids.ASHEN_BAND_UNMATCHED_WISDOM))
                     buffs.push({id: constants.buffs.ASHEN_BAND, name: "Frostforged Sage (Ashen Band)"});
-
+                
                 buffs = _.sortBy(buffs, "name");
 
                 return buffs;
@@ -3068,7 +3070,7 @@
                 if (name == "conjured")
                     return this.config.conjured != constants.conjureds.CONJURED_NONE;
                 if (name == "hyperspeed_accelerators")
-                    return this.enchants.hands == this.items.ids.HYPERSPEED_ACCELERATORS;
+                    return this.items.ids.HYPERSPEED_ACCELERATORS != null && this.enchants.hands == this.items.ids.HYPERSPEED_ACCELERATORS;
                 if (name == "sapper_charge")
                     return this.config.talents.incanters_absorption && this.config.pre_incanters_absorption;
                 if (name == "presence_of_mind")
@@ -3841,11 +3843,11 @@
                 var num = this.numEquippedSet(this.items.ids.CUDC_SET);
                 this.config.cudc_3set = num > 2;
 
-                this.config.black_magic = this.enchants.weapon == this.items.ids.BLACK_MAGIC;
-                this.config.lightweave_embroidery = this.enchants.back == this.items.ids.LIGHTWEAVE_EMBROIDERY;
-                this.config.darkglow_embroidery = this.enchants.back == this.items.ids.DARKGLOW_EMBROIDERY;
-                this.config.hyperspeed_accelerators = this.enchants.hands == this.items.ids.HYPERSPEED_ACCELERATORS;
-
+                this.config.black_magic = this.items.ids.BLACK_MAGIC != null && this.enchants.weapon == this.items.ids.BLACK_MAGIC;
+                this.config.lightweave_embroidery = this.items.ids.LIGHTWEAVE_EMBROIDERY != null && this.enchants.back == this.items.ids.LIGHTWEAVE_EMBROIDERY;
+                this.config.darkglow_embroidery = this.items.ids.DARKGLOW_EMBROIDERY != null && this.enchants.back == this.items.ids.DARKGLOW_EMBROIDERY;
+                this.config.hyperspeed_accelerators = this.items.ids.HYPERSPEED_ACCELERATORS != null && this.enchants.hands == this.items.ids.HYPERSPEED_ACCELERATORS;
+                    
                 if (this.isEquipped("finger", this.items.ids.ASHEN_BAND_ENDLESS_DESTRUCTION) ||
                     this.isEquipped("finger", this.items.ids.ASHEN_BAND_UNMATCHED_DESTRUCTION) ||
                     this.isEquipped("finger", this.items.ids.ASHEN_BAND_ENDLESS_WISDOM) ||
@@ -4283,6 +4285,9 @@
             },
 
             numEquippedSet(id) {
+                if (id == null)
+                    return 0;
+
                 var num = 0;
 
                 for (var key in this.equipped) {
@@ -4542,7 +4547,7 @@
 
             numProfs() {
                 var num = 0;
-                if (this.config.prof_engineer || _.get(this.enchants, "hands") == this.items.ids.HYPERSPEED_ACCELERATORS || _.get(this.enchants, "back") == 63765 || _.get(this.enchants, "feet") == 55016)
+                if (this.config.prof_engineer || this.items.ids.HYPERSPEED_ACCELERATORS != null && _.get(this.enchants, "hands") == this.items.ids.HYPERSPEED_ACCELERATORS || _.get(this.enchants, "back") == 63765 || _.get(this.enchants, "feet") == 55016)
                     num++;
                 if (this.config.prof_skinning)
                     num++;
@@ -4552,7 +4557,7 @@
                     num++;
                 if (_.get(this.enchants, "shoulder") == 61120 || _.get(this.enchants, "shoulder") == 61118)
                     num++;
-                if (_.get(this.enchants, "back") == this.items.ids.LIGHTWEAVE_EMBROIDERY || _.get(this.enchants, "back") == this.items.ids.DARKGLOW_EMBROIDERY)
+                if (this.items.ids.LIGHTWEAVE_EMBROIDERY != null && _.get(this.enchants, "back") == this.items.ids.LIGHTWEAVE_EMBROIDERY || this.items.ids.DARKGLOW_EMBROIDERY != null && _.get(this.enchants, "back") == this.items.ids.DARKGLOW_EMBROIDERY)
                     num++;
                 if (this.numDragonsEye())
                     num++;

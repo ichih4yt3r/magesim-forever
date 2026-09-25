@@ -1,7 +1,7 @@
 <template>
     <div class="timeline">
         <div class="graph">
-            <canvas ref="canvas" height="80"></canvas>
+            <Line v-if="chartData" :data="chartData" :options="chartOptions" />
         </div>
         <div class="events">
             <div class="timestamps">
@@ -30,26 +30,23 @@
 </template>
 
 <script>
-    import { Line } from 'vue-chartjs';
+    import { Line } from "vue-chartjs";
+    import {
+        Chart as ChartJS,
+        LineController,
+        LineElement,
+        PointElement,
+        LinearScale,
+        Legend,
+        Filler,
+    } from "chart.js";
+
+    ChartJS.register(LineController, LineElement, PointElement, LinearScale, Legend, Filler);
 
     export default {
-        mixins: [Line],
+        components: { Line },
 
-        mounted() {
-            this.addPlugin({
-                id: "custom-plugin",
-                afterRender: this.afterRender,
-            });
-            this.draw();
-        },
-
-        watch: {
-            result() {
-                this.draw();
-            }
-        },
-
-        props: ['result'],
+        props: ["result"],
 
         data() {
             return {
@@ -124,6 +121,117 @@
         },
 
         computed: {
+            chartData() {
+                var mana = [];
+                var log = this.result.log;
+                for (var i = 0; i < log.length; i++) {
+                    if (log[i].t < 0)
+                        continue;
+                    if (log[i].text.indexOf("Mana Regen") != -1)
+                        mana.push({ x: log[i].t, y: log[i].mana_percent });
+                }
+                var lastPlayer = null;
+                for (var i = log.length - 1; i >= 0; i--) {
+                    if (log[i].unit == "Player") {
+                        lastPlayer = log[i];
+                        break;
+                    }
+                }
+                mana.push({ x: this.result.t, y: lastPlayer ? lastPlayer.mana_percent : 0 });
+
+                var dps = [{ x: 0, y: 0 }];
+                for (var i = 0; i < log.length; i++) {
+                    if (log[i].type == 3 && log[i].t)
+                        dps.push({ x: log[i].t, y: log[i].dmg / log[i].t });
+                }
+                dps.push({ x: this.result.t, y: this.result.dps });
+
+                return {
+                    datasets: [
+                        {
+                            data: mana,
+                            borderColor: "#08f",
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            hitRadius: 0,
+                            label: "Mana",
+                        },
+                        {
+                            data: dps,
+                            borderColor: "#f00",
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            label: "DPS",
+                            fill: false,
+                            yAxisID: "dps",
+                        },
+                    ],
+                };
+            },
+
+            chartOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    color: "rgba(255,255,255,0.75)",
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                filter: function(item) {
+                                    return item.text != "";
+                                },
+                            },
+                        },
+                        tooltip: {
+                            enabled: false,
+                        },
+                    },
+                    elements: {
+                        line: {
+                            tension: 0,
+                        },
+                    },
+                    scales: {
+                        x: {
+                            type: "linear",
+                            max: this.result.t,
+                            title: {
+                                display: true,
+                                text: "Time (s)",
+                            },
+                            grid: {
+                                color: "rgba(120,140,240,0.1)",
+                            },
+                        },
+                        y: {
+                            type: "linear",
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Mana (%)",
+                            },
+                            grid: {
+                                color: "rgba(120,140,240,0.4)",
+                            },
+                        },
+                        dps: {
+                            type: "linear",
+                            position: "right",
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "DPS",
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        },
+                    },
+                };
+            },
+
             times() {
                 var times = [];
                 var steps = [1,2,5,10,15,20,30,40,60,90,120];
@@ -158,11 +266,20 @@
                         uptime = 0;
                         event = _.clone(this.cds[i]);
                         event.events = [];
-                        while (logs.length) {
-                            start = logs.shift();
+                        for (var j = 0; j < logs.length; j++) {
+                            start = logs[j];
                             if (start.text.indexOf("Player gained ") == -1)
                                 continue;
-                            for (end = logs.shift(); end && end.text.indexOf("Player lost ") != 0; end = logs.shift());
+                            end = null;
+                            for (var k = j + 1; k < logs.length; k++) {
+                                if (logs[k].text.indexOf("Player lost ") == 0) {
+                                    end = logs[k];
+                                    j = k;
+                                    break;
+                                }
+                            }
+                            if (!end)
+                                j = logs.length;
                             event.events.push({
                                 start: start.t,
                                 end: end ? end.t : this.result.t,
@@ -183,11 +300,20 @@
                         uptime = 0;
                         event = _.clone(this.trinkets[i]);
                         event.events = [];
-                        while (logs.length) {
-                            start = logs.shift();
+                        for (var j = 0; j < logs.length; j++) {
+                            start = logs[j];
                             if (start.text.indexOf("Player gained ") == -1)
                                 continue;
-                            for (end = logs.shift(); end && end.text.indexOf("Player lost ") != 0; end = logs.shift());
+                            end = null;
+                            for (var k = j + 1; k < logs.length; k++) {
+                                if (logs[k].text.indexOf("Player lost ") == 0) {
+                                    end = logs[k];
+                                    j = k;
+                                    break;
+                                }
+                            }
+                            if (!end)
+                                j = logs.length;
                             event.events.push({
                                 start: start.t,
                                 end: end ? end.t : this.result.t,
@@ -239,124 +365,8 @@
 
             formatTime(time) {
                 return time+"s";
-
-                // var s = time%s;
-                // var m = time - s;
-                // return (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
             },
 
-            draw() {
-                var data = {
-                    datasets: [],
-                };
-
-                var options = {
-                    legend: {
-                        display: true,
-                        labels: {
-                            filter: function(item, chart) {
-                                return item.text != "";
-                            }
-                        }
-                    },
-                    tooltips: {
-                        enabled: false,
-                    },
-                    elements: {
-                        line: {
-                            tension: 0
-                        }
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: "linear",
-                            ticks: {
-                                max: this.result.t,
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Time (s)",
-                            },
-                            gridLines: {
-                                color: "rgba(120,140,240,0.1)",
-                            }
-                        }],
-                        yAxes: [{
-                            type: "linear",
-                            ticks: {
-                                beginAtZero: true,
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Mana (%)",
-                            },
-                            gridLines: {
-                                color: "rgba(120,140,240,0.4)",
-                            }
-                        }, {
-                            id: "dps",
-                            type: "linear",
-                            ticks: {
-                                beginAtZero: true,
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "DPS",
-                            }
-                        }]
-                    }
-                };
-
-                // Mana
-                var d = [];
-                var mana_smooth = true;
-                if (mana_smooth) {
-                    if (!d.length) {
-                        for (var i=0; i<this.result.log.length; i++) {
-                            if (this.result.log[i].t < 0)
-                                continue;
-                            if (this.result.log[i].text.indexOf("Mana Regen") != -1)
-                                d.push({x: this.result.log[i].t, y: this.result.log[i].mana_percent});
-                        }
-                    }
-                    d.push({x: this.result.t, y: _.last(this.result.log.filter(l => l.unit == "Player")).mana_percent});
-                }
-                else {
-                    for (var i=0; i<this.result.log.length; i++) {
-                        if (this.result.log[i].t < 0)
-                            continue;
-                        d.push({x: this.result.log[i].t, y: this.result.log[i].mana_percent});
-                    }
-                }
-                data.datasets.push({
-                    data: d,
-                    borderColor: "#08f",
-                    borderWidth: 1,
-                    pointRadius: 0,
-                    hitRadius: 0,
-                    label: "Mana",
-                });
-
-                // DPS
-                d = [];
-                d.push({x: 0, y: 0});
-                for (var i=0; i<this.result.log.length; i++) {
-                    if (this.result.log[i].type == 3 && this.result.log[i].t)
-                        d.push({x: this.result.log[i].t, y: this.result.log[i].dmg / this.result.log[i].t});
-                }
-                d.push({x: this.result.t, y: this.result.dps});
-                data.datasets.push({
-                    data: d,
-                    borderColor: "#f00",
-                    borderWidth: 1,
-                    pointRadius: 0,
-                    label: "DPS",
-                    fill: false,
-                    yAxisID: "dps",
-                });
-
-                this.renderChart(data, options);
-            },
         }
     }
 </script>

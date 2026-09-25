@@ -933,7 +933,7 @@ let equip = {
 };
  // likely inactive atm
 let gems = [ 
-    { id: 49110, title: "Nightmare Tear", color: "a", int: 10, spi: 10, unique: true },
+    /*{ id: 49110, title: "Nightmare Tear", color: "a", int: 10, spi: 10, unique: true },
     { id: 42702, title: "Enchanted Tear", color: "a", int: 6, spi: 6, unique: true },
     { id: ids.META_CHAOTIC_SKYFLARE, title: "Chaotic Skyflare Diamond", color: "m", crit: 21, desc: "+3% crit dmg", req: {b: 2} },
     { id: ids.META_EMBER_SKYFLARE, title: "Ember Skyflare Diamond", color: "m", sp: 25, desc: "+2% int", req: {r: 3} },
@@ -1003,67 +1003,68 @@ let gems = [
     { id: 45881, title: "Sparkling Stormjewel", color: "b", spi: 20 },
     { id: 40009, title: "Sparkling Sky Sapphire", color: "b", spi: 16 },
     { id: 40010, title: "Lustrous Sky Sapphire", color: "b", mp5: 8 },
-];
+*/];
 
 let enchants = {
     weapon: [
-        { id: 62948, enchantmentId: 3854, title: "Greater Spellpower", sp: 81, twohand: true },
+        /*{ id: 62948, enchantmentId: 3854, title: "Greater Spellpower", sp: 81, twohand: true },
         { id: 60714, enchantmentId: 3834, title: "Mighty Spellpower", sp: 63 },
         { id: 59619, enchantmentId: 3788, title: "Accuracy", crit: 25, hit: 25 },
-        { id: ids.BLACK_MAGIC, enchantmentId: 3790, title: "Black Magic" }, // 35% chance, 35s icd
+        { id: ids.BLACK_MAGIC, enchantmentId: 3790, title: "Black Magic" }, // 35% chance, 35s icd*/
     ],
     head: [
-        { id: 59970, enchantmentId: 3820, title: "Arcanum of Burning Mysteries", sp: 30, crit: 20 },
+        /*{ id: 59970, enchantmentId: 3820, title: "Arcanum of Burning Mysteries", sp: 30, crit: 20 },
         { id: 59960, enchantmentId: 3819, title: "Arcanum of Blissful Mending", sp: 30, mp5: 10 },
-    ],
+    */],
     shoulder: [
-        { id: 61120, enchantmentId: 3838, title: "Master's Inscription of the Storm ", sp: 70, crit: 15 },
+        /*{ id: 61120, enchantmentId: 3838, title: "Master's Inscription of the Storm ", sp: 70, crit: 15 },
         { id: 61118, enchantmentId: 3836, title: "Master's Inscription of the Crag", sp: 70, mp5: 8 },
         { id: 59937, enchantmentId: 3810, title: "Greater Inscription of the Storm ", sp: 24, crit: 15 },
         { id: 59936, enchantmentId: 3809, title: "Greater Inscription of the Crag", sp: 24, mp5: 8 },
-    ],
+    */],
     back: [
-        { id: ids.LIGHTWEAVE_EMBROIDERY, enchantmentId: 3722, title: "Lightweave Embroidery", spi: 1 },
+        /*{ id: ids.LIGHTWEAVE_EMBROIDERY, enchantmentId: 3722, title: "Lightweave Embroidery", spi: 1 },
         { id: ids.DARKGLOW_EMBROIDERY, enchantmentId: 3728, title: "Darkglow Embroidery" },
         { id: 63765, enchantmentId: 3859, title: "Springy Arachnoweave", sp: 27 },
         { id: 47898, enchantmentId: 3831, title: "Greater Speed", haste: 23 },
         { id: 47899, enchantmentId: 3296, title: "Wisdom", spi: 10 },
-    ],
+    */],
     chest: [
-        { id: 60692, enchantmentId: 3832, title: "Powerful Stats", int: 10, spi: 10 },
+        /*{ id: 60692, enchantmentId: 3832, title: "Powerful Stats", int: 10, spi: 10 },
         { id: 44509, enchantmentId: 2381, title: "Greater Mana Restoration", mp5: 10 },
         { id: 33990, enchantmentId: 1144, title: "Major Spirit", spi: 15 },
-    ],
+    */],
     wrist: [
-        { id: 57691, enchantmentId: 3758, title: "Fur Lining - Spell Power", sp: 76 },
+        /*{ id: 57691, enchantmentId: 3758, title: "Fur Lining - Spell Power", sp: 76 },
         { id: 60767, enchantmentId: 2332, title: "Superior Spellpower", sp: 30 },
         { id: 44593, enchantmentId: 1147, title: "Major spirit", spi: 18 },
         { id: 44555, enchantmentId: 1119, title: "Exceptional Intellect", int: 16 },
-    ],
+    */],
     hands: [
-        // { id: ids.HYPERSPEED_ACCELERATORS, enchantmentId: 3604, title: "Hyperspeed Accelerators" },
+      /*  // { id: ids.HYPERSPEED_ACCELERATORS, enchantmentId: 3604, title: "Hyperspeed Accelerators" },
         { id: 44592, enchantmentId: 3246, title: "Exceptional Spellpower", sp: 28 },
         { id: 44488, enchantmentId: 3234, title: "Precision", hit: 20 },
-    ],
+    */],
     waist: [
-        { id: 54793, enchantmentId: 3601, title: "Frag belt" },
-    ],
+        /*{ id: 54793, enchantmentId: 3601, title: "Frag belt" },
+    */],
     legs: [
-        { id: 55631, enchantmentId: 3719, title: "Brilliant Spellthread", sp: 50, spi: 20 },
+        /*{ id: 55631, enchantmentId: 3719, title: "Brilliant Spellthread", sp: 50, spi: 20 },
         { id: 55634, enchantmentId: 3721, title: "Sapphire Spellthread", sp: 50 },
         { id: 55630, enchantmentId: 3718, title: "Shining Spellthread", sp: 35, spi: 12 },
         { id: 55632, enchantmentId: 3720, title: "Azure Spellthread", sp: 35 },
-    ],
+    */],
     feet: [
-        { id: 55016, enchantmentId: 3606, title: "Nitro Boosts", crit: 24 },
+        /*  { id: 55016, enchantmentId: 3606, title: "Nitro Boosts", crit: 24 },
         { id: 47901, enchantmentId: 3232, title: "Tuskarr's Vitality" },
         { id: 44508, enchantmentId: 1147, title: "Greater Spirit", spi: 18 },
         { id: 44584, enchantmentId: 3244, title: "Greater Vitality", mp5: 7 },
         { id: 60623, enchantmentId: 3826, title: "Icewalker", hit: 12, crit: 12 },
-    ],
+    */],
     finger: [
-        { id: 44636, enchantmentId: 3840, title: "Greater Spellpower", sp: 23 },
-    ],
+          /*{ id: 44636, enchantmentId: 3840, title: "Greater Spellpower", sp: 23 },
+    */],
+    
 };
 
 let itemsets = [
