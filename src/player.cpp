@@ -42,7 +42,11 @@ void Player::reset()
     t_slammer = -20;
     fire_ward = 0;
     mana_shield = 0;
-    mana_sapphire = 3;
+    mana_agate = 1;
+    mana_citrine = 1;
+    mana_jade = 1;
+    mana_ruby = 1;
+    // mana_sapphire = 3;
     ab_streak = 0;
     used_dark_rune = false;
     black_magic = false;
@@ -826,7 +830,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
             spell->id == spell::FROSTBOLT ||
             spell->id == spell::FROSTFIRE_BOLT)
         {
-            int chance = talents.missile_barrage * 4;
+            int chance = talents.missile_barrage * 20;
             if (spell->id == spell::ARCANE_BLAST)
                 chance *= 2;
 
@@ -1295,7 +1299,7 @@ std::vector<action::Action> Player::onSpellTickProc(const State& state, std::sha
     std::vector<action::Action> actions = Unit::onSpellTickProc(state, spell, target, tick);
 
     if (spell->id == spell::EVOCATION)
-        actions.push_back(manaAction(spiritManaPerSecond() * 16.0 * (spell-> actual_cost /spell->ticks), "Evocation"));
+        actions.push_back(manaAction(spiritManaPerSecond() * 16.0, "Evocation"));
 
     if (hasBuff(buff::ARCANE_POTENCY)) {
         // Special case for blizzard (maybe all channeled aoe?)
@@ -1385,16 +1389,26 @@ std::vector<action::Action> Player::onCastOrTick(const State& state, std::shared
 
 bool Player::hasManaGem() const
 {
-    return mana_sapphire > 0;
+    return mana_ruby > 0  || mana_jade > 0 || mana_agate > 0 || mana_citrine > 0; //mana_sapphire is not used
 }
 
 double Player::manaGemMax() const
 {
     double max = 0;
-    if (mana_sapphire > 0)
+    if (mana_ruby > 0)
+        max = 1200;
+    else if (mana_jade > 0)
+        max = 925;
+    else if (mana_citrine > 0)
+        max = 650;
+    else if (mana_agate > 0)
+        max = 425;
+
+    /* if (mana_sapphire > 0)
         max = 3500;
     else
         return 0;
+    */
 
     double imp = 1;
     if (config.t7_2set)
@@ -1514,10 +1528,23 @@ std::vector<action::Action> Player::useManaGem()
 
     double mana = 0;
 
-    if (mana_sapphire > 0) {
-        mana_sapphire--;
-        mana = random<int>(3330, 3500);
+    if (mana_ruby > 0) {
+        mana_ruby--;
+        mana = random<int>(1000, 1200);
     }
+    else if (mana_jade > 0) {
+        mana_jade--;
+        mana = random<int>(775, 925);
+    }
+    else if (mana_citrine > 0) {
+        mana_citrine--;
+        mana = random<int>(375, 425);
+    }
+    else if (mana_agate > 0) {
+        mana_agate--;
+        mana = random<int>(775, 925);
+    }
+
 
     double imp = 1;
     if (config.t7_2set)
@@ -1956,46 +1983,22 @@ bool Player::canBlast(const State& state) const
 
 bool Player::shouldUseMissileBarrage(const State& state)
 {
-    if (config.rotation != ROTATION_ST_AB_AM && config.rotation != ROTATION_ST_AB_AM_BARRAGE)
-        return false;
-
     if (!canReactTo(buff::MISSILE_BARRAGE, state.t))
         return false;
 
-    if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND))
+    // Arcane Missiles is a channel. Presence of Mind does not apply.
+    if (state.isMoving())
         return false;
 
-    auto ab = std::make_shared<spell::ArcaneBlast>();
-    if (state.duration - state.t < castTime(ab) && !hasCooldown(cooldown::FIRE_BLAST))
+    if (state.targets.empty())
         return false;
 
-    // Same priority order as nextAction AB/AM rotation
-    if (config.t10_2set && !hasBuff(buff::BLOODLUST))
-        return true;
-
-    if (canBlast(state))
+    auto am = std::make_shared<spell::ArcaneMissiles>();
+    double first_missile = castTime(am) / am->ticks + travelTime(am);
+    if (state.timeRemain() < first_missile)
         return false;
 
-    if (!hasBuff(buff::ARCANE_POWER) && isTimingReadySoon("arcane_power", state, 5) && state.t < 10)
-        return false;
-
-    if (hasBuff(buff::ARCANE_POWER) && config.rot_abs_ap + 4 > ab_streak && state.t < 60)
-        return false;
-
-    int ab_stacks = 4;
-    if (config.rot_ab3_mana > 0 && manaPercent() < config.rot_ab3_mana)
-        ab_stacks = 3;
-
-    if (config.rot_mb_below_ab && buffStacks(buff::ARCANE_BLAST) < config.rot_mb_below_ab)
-        return true;
-
-    if (config.rot_mb_mana && manaPercent() < config.rot_mb_mana)
-        return true;
-
-    if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks)
-        return true;
-
-    return false;
+    return true;
 }
 
 bool Player::shouldPreCast() const
@@ -2098,6 +2101,10 @@ action::Action Player::nextAction(const State& state)
 
     if (cd.type != action::TYPE_NONE)
         return cd;
+
+    // Missile Barrage makes the channel free, so it is used even with no mana.
+    if (shouldUseMissileBarrage(state))
+        return spellAction<spell::ArcaneMissiles>(state.targets[0]);
 
     // Mana consumes
     if (shouldUseManaGem(state)) {
@@ -2231,9 +2238,6 @@ action::Action Player::nextAction(const State& state)
         }
         else if (state.duration - state.t < castTime(ab) && !hasCooldown(cooldown::FIRE_BLAST))
             return spellAction<spell::FireBlast>(target);
-        // AM asap with t10 2-set
-        else if (config.t10_2set && has_mb && !hasBuff(buff::BLOODLUST))
-            return spellAction<spell::ArcaneMissiles>(target);
         // AB until the end
         else if (canBlast(state))
             return spellAction(ab, target);
@@ -2243,12 +2247,6 @@ action::Action Player::nextAction(const State& state)
         // Extra ABs during AP
         else if (hasBuff(buff::ARCANE_POWER) && config.rot_abs_ap + 4 > ab_streak && state.t < 60)
             return spellAction(ab, target);
-        // AM if we have MB and below n AB stacks
-        else if (config.rot_mb_below_ab && has_mb && buffStacks(buff::ARCANE_BLAST) < config.rot_mb_below_ab)
-            return spellAction<spell::ArcaneMissiles>(target);
-        // AM if we have MB and below mana %
-        else if (config.rot_mb_mana && has_mb && manaPercent() < config.rot_mb_mana)
-            return spellAction<spell::ArcaneMissiles>(target);
         // AB if we don't have barrage and over mana %
         else if (!has_mb && config.rot_ab_no_mb_mana < manaPercent())
             return spellAction(ab, target);

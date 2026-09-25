@@ -77,24 +77,24 @@ a {
     .graph {
         position: relative;
         height: 280px;
-        padding-left: 75px;
     }
 
     .events {
-        padding-right: 20px;
+        padding-right: var(--plot-right, 0px);
         margin-top: 30px;
         line-height: 30px;
 
         .title {
             float: left;
-            width: 200px;
+            box-sizing: border-box;
+            width: var(--plot-left, 201px);
             border-right: 1px solid var(--color-stroke);
         }
 
         .times {
             float: left;
             position: relative;
-            width: calc(100% - 201px);
+            width: calc(100% - var(--plot-left, 201px));
             height: 30px;
         }
 
@@ -120,7 +120,11 @@ a {
 
         .timestamps,
         .item {
-            @mixin clearfix;
+            &:after {
+                content: "";
+                display: block;
+                clear: both;
+            }
         }
 
         .item {

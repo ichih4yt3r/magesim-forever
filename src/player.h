@@ -36,6 +36,10 @@ public:
     double t_slammer;
     double fire_ward;
     double mana_shield;
+    int mana_ruby;
+    int mana_jade;
+    int mana_agate;
+    int mana_citrine;
     int mana_sapphire;
     int ab_streak;
     bool used_dark_rune;

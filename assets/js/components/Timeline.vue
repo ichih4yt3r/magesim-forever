@@ -1,7 +1,7 @@
 <template>
     <div class="timeline">
         <div class="graph">
-            <Line v-if="chartData" :data="chartData" :options="chartOptions" />
+            <Line v-if="chartData" :data="chartData" :options="chartOptions" :plugins="chartPlugins" />
         </div>
         <div class="events">
             <div class="timestamps">
@@ -43,6 +43,38 @@
 
     ChartJS.register(LineController, LineElement, PointElement, LinearScale, Legend, Filler);
 
+    const alignPlot = {
+        id: "alignPlot",
+        afterLayout(chart) {
+            const x = chart.scales.x;
+            let plotLeftEdge = 0;
+            let plotRightEdge = chart.width;
+
+            Object.values(chart.scales).forEach((scale) => {
+                if (!scale || scale === x || scale.isHorizontal())
+                    return;
+                if (scale.options.position === "right")
+                    plotRightEdge = Math.min(plotRightEdge, scale.left);
+                else
+                    plotLeftEdge = Math.max(plotLeftEdge, scale.right);
+            });
+
+            chart.chartArea.left = plotLeftEdge;
+            chart.chartArea.right = plotRightEdge;
+            if (x) {
+                x.left = plotLeftEdge;
+                x.right = plotRightEdge;
+                x.configure();
+            }
+
+            const timeline = chart.canvas.closest(".timeline");
+            if (timeline) {
+                timeline.style.setProperty("--plot-left", plotLeftEdge + "px");
+                timeline.style.setProperty("--plot-right", (chart.width - plotRightEdge) + "px");
+            }
+        },
+    };
+
     export default {
         components: { Line },
 
@@ -50,6 +82,7 @@
 
         data() {
             return {
+                chartPlugins: [alignPlot],
                 cds: [
                     { title: "Mana Tide", color: "#05c" },
                     { title: "Innervate", color: "#05c" },
@@ -62,6 +95,7 @@
                     { title: "Read Ley Line", color: "rgba(120,160,220)" },
                     { title: "Eureka", color: "rgba(220,180,70)" },
                     { title: "Arcane Power", color: "#48f" },
+                    { title: "Missile Barrage", color: "#c6f" },
                     { title: "Combustion", color: "#f84" },
                     { title: "Power Infusion", color: "#dd0" },
                     { title: "Lightweave", color: "#823978" },
@@ -125,9 +159,12 @@
                 var mana = [];
                 var log = this.result.log;
                 for (var i = 0; i < log.length; i++) {
-                    if (log[i].t < 0)
+                    if (log[i].t < 0 || log[i].unit != "Player")
                         continue;
-                    if (log[i].text.indexOf("Mana Regen") != -1)
+                    var last = mana[mana.length - 1];
+                    if (last && log[i].t <= last.x)
+                        last.y = log[i].mana_percent;
+                    else
                         mana.push({ x: log[i].t, y: log[i].mana_percent });
                 }
                 var lastPlayer = null;
@@ -154,6 +191,7 @@
                             borderWidth: 1,
                             pointRadius: 0,
                             hitRadius: 0,
+                            stepped: true,
                             label: "Mana",
                         },
                         {
@@ -196,7 +234,10 @@
                     scales: {
                         x: {
                             type: "linear",
+                            min: 0,
                             max: this.result.t,
+                            bounds: "data",
+                            offset: false,
                             title: {
                                 display: true,
                                 text: "Time (s)",
@@ -218,7 +259,7 @@
                         },
                         dps: {
                             type: "linear",
-                            position: "right",
+                            position: "left",
                             beginAtZero: true,
                             title: {
                                 display: true,
@@ -245,9 +286,11 @@
                     }
                 }
 
+                times.push(0);
                 for (var i=step; i<this.result.t; i+= step) {
                     times.push(i);
                 }
+                times.push(this.result.t);
 
                 return times;
             },
