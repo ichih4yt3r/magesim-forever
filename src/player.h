@@ -14,6 +14,7 @@ private:
     std::vector<bool> used_timings;
     const Timing* getNextTiming(const std::string& name) const;
     void useTiming(const Timing* timing);
+    double hotStreakRemaining(double t) const;
 
 public:
     const Talents talents;
@@ -26,6 +27,7 @@ public:
     bool heating_up;
     int hotstreak_crits;
     int hotstreak_hits;
+    int hotstreak_stacks;
     double t_flamestrike;
     double t_flamestrike_dr;
     double t_scorch;

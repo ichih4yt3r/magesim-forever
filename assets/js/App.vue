@@ -973,6 +973,21 @@
                                         <help>Imp. Scorch from you</help>
                                     </label>
                                 </div>
+                                <div class="form-item" v-if="config.talents.hot_streak && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
+                                    <label>
+                                        <span>Pyroblast at Hot Streak stacks</span>
+                                        <help>
+                                            Pyroblast is cast once Hot Streak reaches this many stacks.<br>
+                                            The buff lasts 20 seconds and its timer resets when a stack is gained.<br>
+                                            With fewer stacks, Pyroblast is held until another spell would leave less than your reaction time before the buff expires.
+                                        </help>
+                                    </label>
+                                    <select v-model.number="config.rot_hot_streak_stacks">
+                                        <option :value="1">1</option>
+                                        <option :value="2">2</option>
+                                        <option :value="3">3</option>
+                                    </select>
+                                </div>
                                 <div class="form-item" v-if="config.talents.missile_barrage">
                                     <label>
                                         <span>Missile Barrage</span>
@@ -2057,6 +2072,7 @@
                 rot_ice_lance: false,
                 rot_brain_freeze_fireball: false,
                 rot_brain_freeze_hold: 15,
+                rot_hot_streak_stacks: 3,
                 rot_black_magic: false,
                 rot_black_magic_ench: 0,
                 evo_ticks: 0,

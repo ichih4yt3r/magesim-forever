@@ -94,6 +94,7 @@ struct Config
     bool rot_ice_lance = false;
     bool rot_brain_freeze_fireball = false;
     double rot_brain_freeze_hold = 15;
+    int rot_hot_streak_stacks = 3;
     bool rot_black_magic = false;
     Enchant rot_black_magic_ench = ENCHANT_NONE;
     bool maintain_imp_scorch = false;

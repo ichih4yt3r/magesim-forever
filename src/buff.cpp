@@ -172,7 +172,8 @@ HotStreak::HotStreak()
 {
     id = HOT_STREAK;
     name = "Hot Streak";
-    duration = 10;
+    duration = 20;
+    max_stacks = 3;
 }
 
 Firestarter::Firestarter()

@@ -32,6 +32,7 @@ void Player::reset()
     heating_up = false;
     hotstreak_crits = 0;
     hotstreak_hits = 0;
+    hotstreak_stacks = 0;
     t_flamestrike = -20;
     t_flamestrike_dr = -20;
     t_scorch = -60;
@@ -158,7 +159,7 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
         t -= 2.5;
 
     if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK))
-        t = 0;
+        t *= (1.0 - 0.25 * hotstreak_stacks);
     if (spell->id == spell::FLAMESTRIKE && hasBuff(buff::FIRESTARTER))
         t = 0;
     if ((spell->id == spell::FIREBALL || spell->id == spell::FROSTFIRE_BOLT) && hasBuff(buff::BRAIN_FREEZE))
@@ -653,6 +654,11 @@ std::vector<action::Action> Player::onBuffGain(const State& state, std::shared_p
     else if (buff->id == buff::BRAIN_FREEZE) {
         t_brain_freeze = state.t;
     }
+    else if (buff->id == buff::HOT_STREAK) {
+        auto hs = buffs.find(buff::HOT_STREAK);
+        if (hs != buffs.end())
+            hs->second->t_refreshed = state.t;
+    }
     else if (buff->id == buff::INCANTERS_ABSORPTION) {
         t_incanters_absorption = state.t;
     }
@@ -682,6 +688,8 @@ std::vector<action::Action> Player::onBuffExpire(const State& state, std::shared
         ab_streak = 0;
     if (buff->id == buff::BRAIN_FREEZE)
         actions.push_back(cooldownAction<cooldown::BrainFreeze>());
+    if (buff->id == buff::HOT_STREAK)
+        hotstreak_stacks = 0;
 
     return actions;
 }
@@ -1230,44 +1238,17 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
     if (talents.hot_streak && !instance.spell->dot) {
         if (instance.spell->id == spell::FIREBALL ||
             instance.spell->id == spell::SCORCH ||
-            instance.spell->id == spell::LIVING_BOMB_EXPLOSION ||
             instance.spell->id == spell::FROSTFIRE_BOLT ||
             instance.spell->id == spell::FIRE_BLAST)
         {
-            if (instance.spell->aoe) {
-                hotstreak_hits++;
-                if (instance.result == spell::CRIT)
-                    hotstreak_crits++;
-
-                if (hotstreak_hits == config.targets) {
-                    if (hotstreak_crits == 1 && !heating_up) {
-                        heating_up = true;
-                    }
-                    else if (hotstreak_crits == 1 && heating_up || hotstreak_crits > 1) {
-                        actions.push_back(buffAction<buff::HotStreak>());
-                        heating_up = false;
-                    }
-                    else {
-                        heating_up = false;
-                    }
-
-                    hotstreak_hits = hotstreak_crits = 0;
-                }
+            
+            if (instance.result == spell::CRIT && hotstreak_stacks < 3) {
+                hotstreak_stacks++;
+                actions.push_back(buffAction<buff::HotStreak>());
             }
-            else {
-                if (instance.result == spell::CRIT) {
-                    if (heating_up) {
-                        actions.push_back(buffAction<buff::HotStreak>());
-                        heating_up = false;
-                    }
-                    else {
-                        heating_up = true;
-                    }
-                }
-                else {
-                    heating_up = false;
-                }
-            }
+
+    
+            
         }
     }
 
@@ -2087,6 +2068,15 @@ action::Action Player::preCombat(const State& state)
     return { action::TYPE_NONE };
 }
 
+double Player::hotStreakRemaining(double t) const
+{
+    auto hs = buffs.find(buff::HOT_STREAK);
+    if (hs == buffs.end())
+        return 0;
+
+    return hs->second->duration - (t - hs->second->t_refreshed);
+}
+
 action::Action Player::nextAction(const State& state)
 {
     if (!state.inCombat())
@@ -2142,9 +2132,20 @@ action::Action Player::nextAction(const State& state)
         bool multi_target = config.targets > 1;
         auto pyroblast = std::make_shared<spell::Pyroblast>();
         bool pyro_will_land = travelTime(pyroblast) <= state.duration - state.t;
+        int pyro_at = config.rot_hot_streak_stacks;
+        if (pyro_at < 1)
+            pyro_at = 1;
+        else if (pyro_at > 3)
+            pyro_at = 3;
+        double react = config.reaction_time / 1000.0;
+        double hs_remain = hotStreakRemaining(state.t);
+        bool stacks_ready = hot_streak && pyro_will_land && hotstreak_stacks >= pyro_at;
+        auto hot_streak_expiring = [&](double next_cast) {
+            return hot_streak && pyro_will_land && hotstreak_stacks < pyro_at && hs_remain <= next_cast + react;
+        };
 
-        // Pyroblast - first check
-        if (hot_streak && pyro_will_land && (multi_target || heating_up)) {
+        // Spend Hot Streak before it falls off, or refresh Pyroblast dots on extra targets once stacks are ready.
+        if (hot_streak_expiring(Unit::gcd()) || (stacks_ready && multi_target)) {
             if (multi_target && !config.only_main_dmg) {
                 for (auto const& tar : state.targets) {
                     if (tar->t_pyroblast + 12.0 < state.t)
@@ -2170,9 +2171,11 @@ action::Action Player::nextAction(const State& state)
         else
             main_spell = std::make_shared<spell::Scorch>();
 
-        // Pyroblast - second check
-        if (hot_streak && pyro_will_land) {
-            if (!hasBuff(buff::PUSHING_THE_LIMIT) || 
+        // Pyroblast once the chosen stack count is reached. Below that, only if another filler
+        // would end with less than a reaction time left on Hot Streak.
+        if (stacks_ready || hot_streak_expiring(castTime(main_spell))) {
+            if (hot_streak_expiring(castTime(main_spell)) ||
+                !hasBuff(buff::PUSHING_THE_LIMIT) ||
                 state.duration - state.t < castTime(main_spell) + travelTime(main_spell) ||
                 target->t_living_bomb + 12.0 < state.t + Unit::gcd())
             {
