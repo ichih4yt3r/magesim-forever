@@ -400,8 +400,8 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     if (talents.molten_fury && state.hpRemain() <= 35.0 && spell->id != spell::LIVING_BOMB)
         multi *= 1 + (talents.molten_fury * 0.06);
 
-    if (spell->school == SCHOOL_ARCANE && hasBuff(buff::ARCANE_BLAST, true)) {
-        double ab = 0.15;
+    if (hasBuff(buff::ARCANE_BLAST, true)) {
+        double ab = 0.10;
         if (glyphs.arcane_blast)
             ab += 0.03;
         multi *= 1 + ab * buffStacks(buff::ARCANE_BLAST, true);
@@ -429,7 +429,7 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     if (config.t6_4set && (spell->id == spell::FIREBALL || spell->id == spell::FROSTBOLT || spell->id == spell::ARCANE_MISSILES))
         additive += 0.05;
     if (hasBuff(buff::ARCANE_POWER))
-        additive += 0.2;
+        additive += 0.3;
 
     if (talents.spell_impact) {
         if (spell->id == spell::ARCANE_BLAST ||
@@ -495,17 +495,6 @@ double Player::manaCostMultiplier(std::shared_ptr<spell::Spell> spell) const
     if (spell->id == spell::ARCANE_MISSILES && hasBuff(buff::MISSILE_BARRAGE))
         return 0;
 
-    if (talents.precision)
-        multi *= (1.0 - talents.precision * 0.01);
-    if (talents.arcane_focus && spell->school == SCHOOL_ARCANE)
-        multi *= (1.0 - talents.arcane_focus * 0.01);
-    if (spell->id == spell::ARCANE_BARRAGE && glyphs.arcane_barrage)
-        multi *= 0.8;
-    if (spell->id == spell::ARCANE_EXPLOSION && glyphs.arcane_explosion)
-        multi *= 0.9;
-    if (glyphs.blast_wave && spell->id == spell::BLAST_WAVE)
-        multi *= 0.85;
-
     if (talents.frost_channeling) {
         if (talents.frost_channeling == 1)
             multi*= 0.96;
@@ -516,7 +505,7 @@ double Player::manaCostMultiplier(std::shared_ptr<spell::Spell> spell) const
     }
 
     if (hasBuff(buff::EUREKA))
-        multi *= 0.5;
+        multi *= 0.9;
 
     return multi;
 }
@@ -526,7 +515,7 @@ double Player::manaCostMod(std::shared_ptr<spell::Spell> spell, double mana_cost
     double mod = Unit::manaCostMod(spell, mana_cost);
 
     if (hasBuff(buff::ARCANE_POWER))
-        mod+= 0.2 * mana_cost;
+        mod+= 0.3 * mana_cost;
 
     if (spell->id == spell::ARCANE_BLAST) {
         double multi = 1.75 * buffStacks(buff::ARCANE_BLAST);
@@ -728,7 +717,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
 
     // Cooldowns
     if (spell->id == spell::FIRE_BLAST)
-        actions.push_back(cooldownAction<cooldown::FireBlast>(talents.imp_fire_blast));
+        actions.push_back(cooldownAction<cooldown::FireBlast>(talents.wake_of_fire));
     if (spell->id == spell::ARCANE_BARRAGE)
         actions.push_back(cooldownAction<cooldown::ArcaneBarrage>());
     if (spell->id == spell::BLAST_WAVE)
@@ -1306,7 +1295,7 @@ std::vector<action::Action> Player::onSpellTickProc(const State& state, std::sha
     std::vector<action::Action> actions = Unit::onSpellTickProc(state, spell, target, tick);
 
     if (spell->id == spell::EVOCATION)
-        actions.push_back(manaAction(maxMana() * 0.15, "Evocation"));
+        actions.push_back(manaAction(spiritManaPerSecond() * 16.0 * (spell-> actual_cost /spell->ticks), "Evocation"));
 
     if (hasBuff(buff::ARCANE_POTENCY)) {
         // Special case for blizzard (maybe all channeled aoe?)

@@ -195,10 +195,10 @@ namespace cooldown
     {
 
     public:
-        FireBlast(int imp_fire_blast = 0)
+        FireBlast(int wake_of_fire = 0)
         {
             id = FIRE_BLAST;
-            duration = 8 - imp_fire_blast * 1.0;
+            duration = 8 - wake_of_fire * 1.0;
         }
 
     };

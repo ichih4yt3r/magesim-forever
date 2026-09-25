@@ -4706,6 +4706,10 @@
                 var arr = build.split("_");
                 var has_glyphs = arr.length > 1;
                 var t = arr[0];
+                // Wowhead Forever prefixes the string with the two characters "v1".
+                // Only those two: the following digits are Arcane ranks. A broader
+                // \d+ match would delete the whole Arcane tree.
+                t = t.replace(/^v1/, "");
                 var ch, value;
                 var tree = 0, talent = 0;
 
