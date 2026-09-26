@@ -1585,12 +1585,13 @@ std::vector<action::Action> Player::usePotion(Potion potion, bool in_combat)
 
     double duration = 60;
     if (potion == POTION_MANA) {
-        double mana = round(random<double>(4200, 4400));
+        double mana = round(random<double>(1350, 2250));
 
         if (hasTrinket(TRINKET_MERCURIAL_ALCHEMIST_STONE))
             mana *= 1.4;
-        if (config.prof_engineer)
-            mana *= 1.25;
+        // not sure if eng will have this
+        // if (config.prof_engineer) 
+            //mana *= 1.25;
 
         actions.push_back(manaAction(mana, "Mana Potion"));
     }

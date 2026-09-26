@@ -2080,7 +2080,7 @@
                 timings: Array(),
                 interruptions: Array(),
 
-                build: "https://www.wowhead.com/forever/talent-calc/mage/v1055205023100311531-03-0550000001_t0",
+                build: "https://www.wowhead.com/forever/talent-calc/mage/v2055205023100311531-03-0550000001_t0",
 
                 stats: {
                     intellect: 0,
@@ -4116,7 +4116,7 @@
                     return "https://www.wotlkdb.com/?item="+id;
                 if (this.item_source == "evo")
                     return "https://wotlk.evowow.com/?item="+id;
-                return "https://www.wowhead.com/wotlk/item="+id;
+                return "https://www.wowhead.com/classic/item="+id;
             },
 
             spellUrl(id) {
@@ -4126,7 +4126,7 @@
                     return "https://www.wotlkdb.com/?spell="+id;
                 if (this.item_source == "evo")
                     return "https://wotlk.evowow.com/?spell="+id;
-                return "https://www.wowhead.com/wotlk/spell="+id;
+                return "https://www.wowhead.com/classic/spell="+id;
             },
 
             equippedUrl(slot) {
