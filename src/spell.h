@@ -163,8 +163,8 @@ namespace spell
         ArcaneMissiles() : Spell(ARCANE_MISSILES, "Arcane Missiles", SCHOOL_ARCANE)
         {
             cost = 31;
-            min_dmg = 171;
-            max_dmg = 171;
+            min_dmg = 196;
+            max_dmg = 196;
             cast_time = 5;
             coeff = 5.0/3.5;
             channeling = true;
@@ -193,8 +193,8 @@ namespace spell
         Frostbolt() : Spell(FROSTBOLT, "Frostbolt", SCHOOL_FROST)
         {
             cost = 11;
-            min_dmg = 371;
-            max_dmg = 401;
+            min_dmg = 515;
+            max_dmg = 555;
             cast_time = 3;
             coeff = 3/3.5;
             speed = 28;
@@ -206,8 +206,8 @@ namespace spell
         Fireball() : Spell(FIREBALL, "Fireball", SCHOOL_FIRE)
         {
             cost = 19;
-            min_dmg = 397;
-            max_dmg = 505;
+            min_dmg = 596;
+            max_dmg = 760;
             cast_time = 3.5;
             coeff = 1;
             speed = 24;
@@ -224,8 +224,8 @@ namespace spell
             coeff = 0;
             t_interval = 2;
             ticks = 4;
-            min_dmg = 14;
-            max_dmg = 14;
+            min_dmg = 19;
+            max_dmg = 19;
         }
     };
 
@@ -262,8 +262,8 @@ namespace spell
         Scorch() : Spell(SCORCH, "Scorch", SCHOOL_FIRE)
         {
             cost = 8;
-            min_dmg = 163;
-            max_dmg = 193;
+            min_dmg = 237;
+            max_dmg = 280;
             cast_time = 1.5;
             coeff = 1.5/3.5;
         }
@@ -274,8 +274,8 @@ namespace spell
         FireBlast() : Spell(FIRE_BLAST, "Fire Blast", SCHOOL_FIRE)
         {
             cost = 21;
-            min_dmg = 402;
-            max_dmg = 474;
+            min_dmg = 446;
+            max_dmg = 524;
             cast_time = 0;
             coeff = 1.5/3.5;
         }
@@ -299,10 +299,11 @@ namespace spell
         Pyroblast() : Spell(PYROBLAST, "Pyroblast", SCHOOL_FIRE)
         {
             cost = 22;
-            min_dmg = 520;
-            max_dmg = 646;
-            cast_time = 5;
-            coeff = 1.15;
+            min_dmg = 716;
+            max_dmg = 890;
+            cast_time = 6;
+            // classic formula is capped at 1.0  coeff.
+            coeff = 1;
             speed = 24;
         }
     };
@@ -315,9 +316,10 @@ namespace spell
             active_use = false;
             t_interval = 3;
             ticks = 4;
-            min_dmg = 53;
-            max_dmg = 53;
-            coeff = 0.05;
+            min_dmg = 67;
+            max_dmg = 67;
+            // classic formula is at 0.15 coeff.
+            coeff = 0.15;
         }
     };
 
@@ -517,12 +519,12 @@ namespace spell
 
     struct Evocation : Spell
     {
-        Evocation(int _ticks = 4) : Spell(EVOCATION, "Evocation", SCHOOL_ARCANE)
+        Evocation(int _ticks = 8) : Spell(EVOCATION, "Evocation", SCHOOL_ARCANE)
         {
             is_trigger = true;
             channeling = true;
             ticks = _ticks;
-            cast_time = _ticks*2;
+            cast_time = _ticks;
         }
     };
 

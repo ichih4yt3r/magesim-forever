@@ -160,6 +160,7 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
 
     if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK))
         t *= (1.0 - 0.25 * hotstreak_stacks);
+    
     if (spell->id == spell::FLAMESTRIKE && hasBuff(buff::FIRESTARTER))
         t = 0;
     if ((spell->id == spell::FIREBALL || spell->id == spell::FROSTFIRE_BOLT) && hasBuff(buff::BRAIN_FREEZE))
@@ -2137,15 +2138,13 @@ action::Action Player::nextAction(const State& state)
             pyro_at = 1;
         else if (pyro_at > 3)
             pyro_at = 3;
-        double react = config.reaction_time / 1000.0;
         double hs_remain = hotStreakRemaining(state.t);
+        double pyro_cast = castTime(pyroblast);
         bool stacks_ready = hot_streak && pyro_will_land && hotstreak_stacks >= pyro_at;
-        auto hot_streak_expiring = [&](double next_cast) {
-            return hot_streak && pyro_will_land && hotstreak_stacks < pyro_at && hs_remain <= next_cast + react;
-        };
+        // Start below the stack goal only when this Pyroblast would not finish before Hot Streak falls off.
+        bool pyro_would_miss_buff = hot_streak && pyro_will_land && hotstreak_stacks < pyro_at && hs_remain <= pyro_cast;
 
-        // Spend Hot Streak before it falls off, or refresh Pyroblast dots on extra targets once stacks are ready.
-        if (hot_streak_expiring(Unit::gcd()) || (stacks_ready && multi_target)) {
+        if (pyro_would_miss_buff || (stacks_ready && multi_target)) {
             if (multi_target && !config.only_main_dmg) {
                 for (auto const& tar : state.targets) {
                     if (tar->t_pyroblast + 12.0 < state.t)
@@ -2171,11 +2170,9 @@ action::Action Player::nextAction(const State& state)
         else
             main_spell = std::make_shared<spell::Scorch>();
 
-        // Pyroblast once the chosen stack count is reached. Below that, only if another filler
-        // would end with less than a reaction time left on Hot Streak.
-        if (stacks_ready || hot_streak_expiring(castTime(main_spell))) {
-            if (hot_streak_expiring(castTime(main_spell)) ||
-                !hasBuff(buff::PUSHING_THE_LIMIT) ||
+        // Pyroblast once the chosen stack count is reached.
+        if (stacks_ready) {
+            if (!hasBuff(buff::PUSHING_THE_LIMIT) ||
                 state.duration - state.t < castTime(main_spell) + travelTime(main_spell) ||
                 target->t_living_bomb + 12.0 < state.t + Unit::gcd())
             {
