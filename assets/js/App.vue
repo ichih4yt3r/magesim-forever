@@ -108,8 +108,8 @@
                                             <div v-if="config.talents.arcane_instability">{{ config.talents.arcane_instability }}% from Arcane Instability</div>
                                             <div v-if="config.talents.pyromaniac">{{ config.talents.pyromaniac }}% from Pyromaniac</div>
                                             <div v-if="config.focus_magic">3% from Focus Magic</div>
-                                            <div v-if="config.buff_spell_crit">5% from spell crit buff</div>
-                                            <div v-if="config.debuff_spell_crit">5% from spell crit debuff</div>
+                                            <div v-if="config.buff_spell_crit">3% from spell crit buff</div>
+                                            <div v-if="config.debuff_spell_crit">3% from spell crit debuff</div>
                                             <div v-if="config.debuff_crit">3% from crit debuff</div>
                                         </div>
                                     </tooltip>
@@ -1069,7 +1069,7 @@
                                 </div>
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.debuff_spell_crit">
-                                        <span>5% spell crit</span>
+                                        <span>3% spell crit</span>
                                         <help>
                                             Imp. Shadow Bolt<br>Winter's Chill<br>Imp. Scorch
                                             <br><br>Do no check this if you are the person keeping up Winter's Chill or Imp. Scorch.
@@ -1104,35 +1104,44 @@
                             <fieldset class="config-buffs">
                                 <legend>Buffs</legend>
                                 <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.mage_armor" @input="dontStack($event, 'molten_armor')"> <span>Mage Armor</span></label>
+                                    <!-- <label><input type="checkbox" v-model="config.mage_armor" @input="dontStack($event, 'molten_armor')"> <span>Mage Armor</span></label> -->
+                                    <label><input type="checkbox" :checked="true" :disabled="true">
+                                    <span>Mage Armor</span>
+                                    <help>Mage Armor is the only Armor we have for raiding</help>
+                                    </label>
                                 </div>
+                                <!-- No Molten Armor yet
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.molten_armor" @input="dontStack($event, 'mage_armor')"> <span>Molten Armor</span></label>
                                 </div>
+                                 -->
                                 <div class="form-item">
                                     <label><input type="checkbox" :checked="true" :disabled="true">
                                         <span>Arcane Intellect</span>
-                                        <help>60 intellect</help>
+                                        <help>31 intellect</help>
                                     </label>
                                 </div>
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.divine_spirit" @input="dontStack($event, 'fel_intelligence')">
                                         <span>Divine Spirit</span>
-                                        <help>80 spirit</help>
+                                        <help>40 spirit</help>
                                     </label>
                                 </div>
+                                <!-- 
                                 <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.fel_intelligence" @input="dontStack($event, 'divine_spirit')">
+                                    <label><input type="checkbox" :checked="false" v-model="config.fel_intelligence" @input="dontStack($event, 'divine_spirit')">
                                         <span>Fel intelligence</span>
                                         <help>64 spirit<br>The intellect part does not stack with Arcane Intellect</help>
                                     </label>
-                                </div>
+                                </div> 
+                                -->
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.mark_of_the_wild">
                                         <span>Mark of the Wild</span>
-                                        <help>37 stats</help>
+                                        <help>14 stats</help>
                                     </label>
                                 </div>
+                                <!-- no improved
                                 <div class="form-item sub" v-if="config.mark_of_the_wild">
                                     <label><input type="checkbox" v-model="config.imp_mark_of_the_wild">
                                         <span class="material-icons">&#xe5da;</span>
@@ -1140,101 +1149,102 @@
                                         <help>52 stats instead of 37</help>
                                     </label>
                                 </div>
-                                <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.totem_of_wrath" @input="config.debuff_crit = $event.target.checked; dontStack($event, 'flametongue')">
+                                -->
+                                <!-- <div class="form-item">
+                                    <label><input type="checkbox" :checked="false" v-model="config.totem_of_wrath" @input="config.debuff_crit = $event.target.checked; dontStack($event, 'flametongue')">
                                         <span>Totem of Wrath</span>
                                         <help>3% crit + 280 spell power</help>
                                     </label>
                                 </div>
                                 <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.flametongue" @input="dontStack($event, 'totem_of_wrath')">
+                                    <label><input type="checkbox" :checked="false" v-model="config.flametongue" @input="dontStack($event, 'totem_of_wrath')">
                                         <span>Flametongue Totem</span>
                                         <help>144 spell power</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label>
                                         <input type="checkbox" v-model="config.demonic_pact">
                                         <span>Demonic Pact</span>
                                         <help>Does not stack with Totem of Wrath or Flametongue totem.</help>
                                     </label>
-                                </div>
+                                </div> 
                                 <div class="form-item" v-if="config.demonic_pact">
                                     <label>
                                         <span>Demonic Pact Bonus</span>
                                         <help>10% of the Warlocks spell power.</help>
                                     </label>
                                     <input type="text" v-model.number="config.demonic_pact_bonus">
-                                </div>
-                                <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.buff_spell_haste">
+                                </div> -->
+                                <!-- <div class="form-item">
+                                    <label><input type="checkbox" :checked="false" v-model="config.buff_spell_haste">
                                         <span>Wrath of Air Totem</span>
                                         <help>5% spell haste</help>
                                     </label>
-                                </div>
+                                </div> --> 
                                 <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.mana_spring" @input="dontStack($event, 'blessing_of_wisdom')">
+                                    <label><input type="checkbox" v-model="config.mana_spring" >
                                         <span>Mana Spring Totem</span>
-                                        <help>91 mp5</help>
+                                        <help>10 mp5</help>
                                     </label>
                                 </div>
                                 <div class="form-item sub" v-if="config.mana_spring">
                                     <label><input type="checkbox" v-model="config.restorative_totems">
                                         <span class="material-icons">&#xe5da;</span>
                                         <span>Restorative Totems</span>
-                                        <help>109 mp5 instead of 91</help>
+                                        <help>12 mp5 instead of 10</help>
                                     </label>
                                 </div>
                                 <div class="form-item">
-                                    <label><input type="checkbox" v-model="config.blessing_of_wisdom" @input="dontStack($event, 'mana_spring')">
+                                    <label><input type="checkbox" v-model="config.blessing_of_wisdom">
                                         <span>Blessing of Wisdom</span>
-                                        <help>92 mp5</help>
+                                        <help>40 mp5</help>
                                     </label>
                                 </div>
-                                <div class="form-item sub" v-if="config.blessing_of_wisdom">
-                                    <label><input type="checkbox" v-model="config.imp_blessing_of_wisdom">
+                                <!-- <div class="form-item sub" v-if="config.blessing_of_wisdom">
+                                    <label><input type="checkbox" :checked="false" v-model="config.imp_blessing_of_wisdom">
                                         <span class="material-icons">&#xe5da;</span>
                                         <span>Imp. Blessing of Wisdom</span>
-                                        <help>110 mp5 instead of 91</help>
+                                        <help>wrath numbers 110 mp5 instead of 91</help> 
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.blessing_of_kings" @input="dontStack($event, 'drums_of_forgotten_kings')">
                                         <span>Blessing of Kings</span>
                                         <help>10% stats</help>
                                     </label>
                                 </div>
-                                <div class="form-item">
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.drums_of_forgotten_kings" @input="dontStack($event, 'blessing_of_kings')">
                                         <span>Drums of Forgotten Kings</span>
                                         <help>8% stats</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.buff_dmg">
                                         <span>3% damage</span>
                                         <help>Sanctified Retribution<br>Ferocious Inspiration<br>Arcane Empowerment</help>
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.buff_spell_crit">
-                                        <span>5% spell crit</span>
+                                        <span>3% spell crit</span>
                                         <help>Moonkin Aura<br>Elemental Oath</help>
                                     </label>
                                 </div>
-                                <div class="form-item">
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.buff_haste">
                                         <span>3% haste</span>
                                         <help>Improved moonkin form<br>Swift Retribution</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.mana_replenishment">
                                         <span>Replenish 1% mana every 5 sec</span>
                                         <help>Vampiric Touch<br>Judgement of the Wise<br>Hunting Party<br>Improved Soul Leech<br>Enduring Winter</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> --> 
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.focus_magic">
                                         <span>Focus Magic</span>
                                         <help>
@@ -1242,20 +1252,20 @@
                                             If you have Focus Magic talented it will be factored in with permanent uptime after 5 seconds into the fight.
                                         </help>
                                     </label>
-                                </div>
-                                <div class="form-item" v-if="faction == 'alliance'">
+                                </div> --> 
+                                <!-- <div class="form-item" v-if="faction == 'alliance'">
                                     <label><input type="checkbox" v-model="config.heroic_presence">
                                         <span>Heroic Presence</span>
                                         <help>1% hit from Draenei Racial.<br>This is automatically applied if your race is Draenei</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.prof_skinning">
                                         <span>Master of Anatomy (Skinning)</span>
                                         <help>40 crit rating</help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.prof_alchemy">
                                         <span>Mixology (Alchemy)</span>
                                         <help>
@@ -1271,14 +1281,14 @@
                                             Elixir of Mighty Thoughts: +20 int
                                         </help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.prof_engineer">
                                         <span>Mana Injectors (Engineering)</span>
                                         <help>25% extra from mana potions</help>
                                     </label>
-                                </div>
-                                <div class="form-item" v-if="canSulfuronSlammer">
+                                </div> --> 
+                                <!-- <div class="form-item" v-if="canSulfuronSlammer">
                                     <label><input type="checkbox" v-model="config.sulfuron_slammer">
                                         <span>Sulfuron Slammer</span>
                                         <help>
@@ -1286,8 +1296,8 @@
                                             Phylactery of the Nameless Lich
                                         </help>
                                     </label>
-                                </div>
-                                <div class="form-item">
+                                </div> -->
+                                <!-- <div class="form-item">
                                     <label>
                                         <span>ICC buff</span>
                                         <help>
@@ -1304,7 +1314,7 @@
                                         <option :value="25">25%</option>
                                         <option :value="30">30%</option>
                                     </select>
-                                </div>
+                                </div> -->
                             </fieldset>
                             <fieldset class="config-consumes">
                                 <legend>Consumes</legend>
@@ -3889,14 +3899,14 @@
 
                 // Spirit
                 if (this.config.divine_spirit)
-                    stats.spirit+= 80;
-                else if (this.config.fel_intelligence)
-                    stats.spirit+= 64;
+                    stats.spirit+= 40;
+                /* else if (this.config.fel_intelligence)
+                    stats.spirit+= 64; */
 
                 if (this.config.mark_of_the_wild) {
-                    x = 37;
-                    if (this.config.imp_mark_of_the_wild)
-                        x = 52;
+                    x = 14;
+                    /* if (this.config.imp_mark_of_the_wild)
+                        x = 52; */
                     stats.intellect+= x;
                     stats.spirit+= x;
                 }
@@ -3993,15 +4003,15 @@
 
                 // Mana Restoration
                 if (this.config.blessing_of_wisdom) {
-                    x = 92;
-                    if (this.config.imp_blessing_of_wisdom)
-                        x = 110;
+                    x = 40;
+                    /* if (this.config.imp_blessing_of_wisdom)
+                        x = 110; */
                     stats.mp5+= x;
                 }
-                else if (this.config.mana_spring) {
-                    x = 91;
-                    if (this.config.imp_blessing_of_wisdom)
-                        x = 109;
+                if (this.config.mana_spring) {
+                    x = 10;
+                    if (this.config.restorative_totems)
+                        x = 12; 
                     stats.mp5+= x;
                 }
 
@@ -4070,11 +4080,11 @@
 
                 // Buff:: Spell crit
                 if (this.config.buff_spell_crit)
-                    stats.crit+= 5;
+                    stats.crit+= 3;
 
                 // Debuff: Spell crit
                 if (this.config.debuff_spell_crit)
-                    stats.crit+= 5;
+                    stats.crit+= 3;
 
                 // Debuff: Spell hit
                 if (this.config.debuff_spell_hit)

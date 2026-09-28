@@ -95,9 +95,8 @@ double Player::manaPerSecond(const State& state) const
         mps += maxMana() * 0.01 / 5.0;
 
     double while_casting = 0;
-    if (t_mana_spent + 5 <= state.t) {
+    if (hasBuff(buff::INNERVATE) || t_mana_spent + 5 <= state.t)
         while_casting = 1;
-    }
     if (talents.arcane_meditation) {
         if (talents.arcane_meditation == 1)
             while_casting += 0.17;

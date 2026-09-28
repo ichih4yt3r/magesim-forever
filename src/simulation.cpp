@@ -1111,11 +1111,11 @@ void Simulation::onBuffGain(std::shared_ptr<unit::Unit> unit, std::shared_ptr<bu
 
     if (buff->id == buff::MANA_TIDE) {
         for (double t = 3; t <= 12; t += 3)
-            pushManaGain(unit, t, unit->maxMana() * 0.06, "Mana Tide");
+            pushManaGain(unit, t, unit->manaPerSecond(state)+290-unit->spiritManaPerSecond(), "Mana Tide");
     }
     else if (buff->id == buff::INNERVATE) {
-        for (double t = 1; t <= 10; t += 1)
-            pushManaGain(unit, t, 3496 * .225, "Innervate");
+        for (double t = 1; t <= 20; t += 1)
+            pushManaGain(unit, t, unit->spiritManaPerSecond()*4, "Innervate");
     }
     else if (buff->id == buff::DISLODGED_OBJECT_HC && stacks < 10) {
         pushBuffGain(unit, buff, 2);
