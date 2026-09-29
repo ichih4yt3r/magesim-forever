@@ -1382,8 +1382,8 @@ double Simulation::debuffDmgMultiplier(std::shared_ptr<unit::Unit> unit, std::sh
     if (!unit->get_raid_debuffs)
         return multi;
 
-    if (config.debuff_spell_dmg)
-        multi *= 1.13;
+    if (config.debuff_spell_dmg) // curse of elements
+        multi *= 1.1;
 
     if (target->hasDebuff(debuff::HODIR_SINGED))
         multi *= 1.5;

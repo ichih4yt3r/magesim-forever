@@ -34,6 +34,8 @@ export default {
         FLASK_NONE: 0,
         FLASK_FROSTWYRM: 46376,
         FLASK_PURE_MOJO: 46378,
+        FLASK_SUPREME_POWER: 46379,
+        FLASK_DISTILLED_WISDOM: 46380,
     },
     elixirs: {
         ELIXIR_NONE: 0,

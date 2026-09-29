@@ -10,4 +10,5 @@ struct Stats
     double haste = 0;
     double haste_rating = 0;
     double spell_power = 0;
+    double bonus_mana = 0;
 };

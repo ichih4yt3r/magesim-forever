@@ -132,9 +132,11 @@ double Player::manaPerSecond(const State& state) const
 double Player::maxMana() const
 {
     double mana = Unit::maxMana();
-
+    
     if (config.meta_gem == META_BEAMING_EARTHSIEGE)
         mana *= 1.02;
+
+    mana += stats.bonus_mana;
 
     return mana;
 }
@@ -1115,7 +1117,7 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
                 if (instance.spell->channeling)
                     chance/= (double) instance.spell->ticks;
                 if (random<double>(0, 100) < chance)
-                    actions.push_back(manaAction(base_mana * 0.02, "Judgement of Wisdom"));
+                    actions.push_back(manaAction( 59, "Judgement of Wisdom"));
             }
 
             if (hasBuff(buff::COMBUSTION) && (instance.spell->school == SCHOOL_FIRE || instance.spell->school == SCHOOL_FROSTFIRE)) {

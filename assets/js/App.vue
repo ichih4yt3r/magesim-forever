@@ -1058,7 +1058,7 @@
                             </fieldset>
                             <fieldset class="config-debuffs">
                                 <legend>Debuffs</legend>
-                                <div class="form-item">
+                                <!-- <div class="form-item">
                                     <label><input type="checkbox" v-model="config.debuff_crit" :disabled="config.totem_of_wrath">
                                         <span>3% crit</span>
                                         <help>
@@ -1081,17 +1081,17 @@
                                         <span>3% spell hit</span>
                                         <help>Misery<br>Imp. Faerie Fire</help>
                                     </label>
-                                </div>
+                                </div> -->
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.debuff_spell_dmg">
-                                        <span>13% spell dmg</span>
-                                        <help>Curse of Elements<br>Earth and Moon<br>Ebon Spellbringer</help>
+                                        <span>Curse of Elements</span>
+                                        <help>10% spell damage & -75 Resist (normally doesnt boss res below 0)</help>
                                     </label>
                                 </div>
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.judgement_of_wisdom">
                                         <span>Judgement of Wisdom</span>
-                                        <help>Chance to restore 2% base mana on spell hit</help>
+                                        <help>Chance to restore 59 mana</help>
                                     </label>
                                 </div>
                                 <div class="form-item">
@@ -1229,7 +1229,7 @@
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.buff_spell_crit">
                                         <span>3% spell crit</span>
-                                        <help>Moonkin Aura<br>Elemental Oath</help>
+                                        <help>Moonkin Aura</help>
                                     </label>
                                 </div>
                                 <!-- <div class="form-item">
@@ -1320,10 +1320,12 @@
                                 <legend>Consumes</legend>
                                 <div class="form-item" v-if="!config.battle_elixir && !config.guardian_elixir">
                                     <label>Flask</label>
-                                    <select v-model="config.flask">
+                                    <select v-model="config.flask" @change="calcStats">
                                         <option :value="flasks.FLASK_NONE">None</option>
-                                        <option :value="flasks.FLASK_FROSTWYRM">Flask of the Frostwyrm (125 sp)</option>
-                                        <option :value="flasks.FLASK_PURE_MOJO">Flask of Pure Mojo (45 mp5)</option>
+                                        <option :value="flasks.FLASK_SUPREME_POWER">Flask of Supreme Power (150sp)</option>
+                                        <option :value="flasks.FLASK_DISTILLED_WISDOM">Flask of Distilled Wisdom (2000 mana)</option>
+                                        <!-- <option :value="flasks.FLASK_FROSTWYRM">Flask of the Frostwyrm (125 sp)</option>
+                                        <option :value="flasks.FLASK_PURE_MOJO">Flask of Pure Mojo (45 mp5)</option> -->
                                     </select>
                                 </div>
                                 <div class="form-item" v-if="!config.flask">
@@ -3697,6 +3699,7 @@
                     crit_rating: 0,
                     hit_rating: 0,
                     haste_rating: 0,
+                    bonus_mana: 0,
                 };
 
                 if (this.config.race == this.races.RACE_TROLL) {
@@ -3913,10 +3916,13 @@
 
                 // Flask
                 if (this.config.flask) {
-                    if (this.config.flask == this.flasks.FLASK_FROSTWYRM)
-                        stats.spell_power+= 125;
+                    
+                    if (this.config.flask == this.flasks.FLASK_SUPREME_POWER)
+                        stats.spell_power+= 150;
                     else if (this.config.flask == this.flasks.FLASK_PURE_MOJO)
                         stats.mp5+= 45;
+                    else if (this.config.flask == this.flasks.FLASK_DISTILLED_WISDOM)
+                        stats.bonus_mana = 2000;
                 }
                 else {
                     // Guardian Elxir
@@ -4100,6 +4106,9 @@
                     stats.mana*= 1.05;
                 if (this.metaGem() && this.metaGem().id == this.items.ids.META_BEAMING_EARTHSIEGE)
                     stats.mana*= 1.02;
+                if (stats.bonus_mana)
+                    stats.mana+= stats.bonus_mana;
+
                 stats.mana = Math.round(stats.mana);
 
                 this.display_stats = stats;

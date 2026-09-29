@@ -302,7 +302,8 @@ EMSCRIPTEN_BINDINGS(my_module)
         .field("hit", &Stats::hit)
         .field("haste", &Stats::haste)
         .field("haste_rating", &Stats::haste_rating)
-        .field("spell_power", &Stats::spell_power);
+        .field("spell_power", &Stats::spell_power)
+        .field("bonus_mana", &Stats::bonus_mana);
 
     emscripten::value_object<Talents>("Talents")
         // new arcane talents
