@@ -135,6 +135,8 @@ double Player::maxMana() const
     
     if (config.meta_gem == META_BEAMING_EARTHSIEGE)
         mana *= 1.02;
+    if (race == RACE_GNOME)
+        mana *= 1.05;
 
     mana += stats.bonus_mana;
 
