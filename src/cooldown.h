@@ -135,7 +135,7 @@ namespace cooldown
     {
 
     public:
-        ArcanePower(double _duration = 120)
+        ArcanePower(double _duration = 180)
         {
             id = ARCANE_POWER;
             duration = _duration;
