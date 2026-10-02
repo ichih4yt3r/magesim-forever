@@ -2,6 +2,7 @@
 
 struct Stats
 {
+    // double stamina = 0;
     double intellect = 0;
     double spirit = 0;
     double mp5 = 0;

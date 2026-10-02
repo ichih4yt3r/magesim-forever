@@ -1753,6 +1753,10 @@
                 <div class="inner">
                     <div class="title">Bonus stats</div>
                     <div class="description">Add additional stats to your character.</div>
+                    <!-- <div class="form-item form-row">
+                        <label>Stamina</label>
+                        <input type="number" v-model.number="config.custom_stats.stamina">
+                    </div> -->
                     <div class="form-item form-row">
                         <label>Intellect</label>
                         <input type="number" v-model.number="config.custom_stats.intellect">
@@ -2095,6 +2099,7 @@
                 build: "https://www.wowhead.com/forever/talent-calc/mage/v2055205023100311531-03-0550000001_t0",
 
                 stats: {
+                    // stamina: 0,
                     intellect: 0,
                     spirit: 0,
                     mp5: 0,
@@ -2108,6 +2113,7 @@
                 },
 
                 custom_stats: {
+                    // stamina: 0,
                     intellect: 0,
                     spirit: 0,
                     mp5: 0,
@@ -3689,6 +3695,7 @@
             baseStats() {
                 // Undead default
                 var stats = {
+                    // stamina: 120,
                     intellect: 123,
                     spirit: 125,
                     mp5: 0,
@@ -3738,6 +3745,7 @@
                 var stats = this.baseStats();
 
                 var item_stats = {
+                    // sta: 0,
                     int: 0,
                     spi: 0,
                     mp5: 0,
@@ -3802,6 +3810,7 @@
                     }
                 }
 
+                // stats.stamina+= item_stats.sta;
                 stats.intellect+= item_stats.int;
                 stats.spirit+= item_stats.spi;
                 stats.mp5+= item_stats.mp5;
