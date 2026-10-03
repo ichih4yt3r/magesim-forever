@@ -83,7 +83,7 @@ Combustion::Combustion()
     id = COMBUSTION;
     name = "Combustion";
     duration = 2000;
-    max_stacks = 20;
+    max_stacks = 3;
 }
 
 Evocation::Evocation(double haste, int ticks)

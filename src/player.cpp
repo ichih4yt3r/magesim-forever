@@ -155,6 +155,9 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
     if (spell->id == spell::FIREBALL && talents.imp_fireball)
         t -= talents.imp_fireball * 0.1;
 
+    if (spell->id == spell::FROSTFIRE_BOLT && talents.imp_fireball)
+        t -= talents.imp_fireball * 0.1;
+
     if (spell->id == spell::FIREBALL && glyphs.fireball)
         t -= 0.15;
 
@@ -312,14 +315,14 @@ double Player::critMultiplierMod(std::shared_ptr<spell::Spell> spell) const
         multi += 0.25;
 
     if ((spell->school == SCHOOL_FROST || spell->school == SCHOOL_FROSTFIRE) && talents.ice_shards) {
-        if (talents.ice_shards == 3)
+        if (talents.ice_shards == 5)
             multi += 1;
         else
-            multi += talents.ice_shards * 0.33;
+            multi += talents.ice_shards * 0.2;
     }
 
-    if (hasBuff(buff::COMBUSTION) && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE))
-        multi += 0.5;
+    //if (hasBuff(buff::COMBUSTION) && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE))
+      //  multi += 0.5;
 
     return multi;
 }

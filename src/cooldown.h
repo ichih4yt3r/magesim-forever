@@ -258,7 +258,7 @@ namespace cooldown
         Combustion()
         {
             id = COMBUSTION;
-            duration = 120;
+            duration = 180;
         }
 
     };
