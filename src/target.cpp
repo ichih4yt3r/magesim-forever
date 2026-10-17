@@ -19,6 +19,9 @@ void Target::reset()
     dmg = 0;
     ignite_dmg = 0;
     t_ignite = -20;
+    t_fireball = -20;
+    t_pyro_dot = -20;
+    t_winters_chill = -20;
     t_living_bomb = -20;
     t_pyroblast = -20;
 

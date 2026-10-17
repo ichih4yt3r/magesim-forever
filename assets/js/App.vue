@@ -821,6 +821,11 @@
                                         <input type="text" v-model.number="config.duration_variance">
                                     </div>
                                 </div>
+                                <div class="form-item">
+                                    <label><input type="checkbox" :checked="config.target_undead" @change="config.target_undead = $event.target.checked; calcStats()">
+                                        <span>Undead target</span>
+                                    </label>
+                                </div>
                                 <div class="form-item form-row">
                                     <div class="form-item">
                                         <label>Target level</label>
@@ -858,7 +863,7 @@
                                 <div class="form-item">
                                     <label>
                                         <span>Distance from target</span>
-                                        <help>This only affects travel time.<br>No range checks are made.</help>
+                                        <help>Travel time uses this distance.<br>Fire Blast is only cast in range: 20 yards, or 28/35 with Improved Fire Blast.</help>
                                     </label>
                                     <input type="text" v-model.number="config.distance">
                                 </div>
@@ -988,6 +993,16 @@
                                         <option :value="3">3</option>
                                     </select>
                                 </div>
+                                <div class="form-item" v-if="config.talents.hot_streak && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
+                                    <label><input type="checkbox" v-model="config.rot_fire_blast_hot_streak">
+                                        <span>Fire Blast to build Hot Streak</span>
+                                        <help>
+                                            While Hot Streak is below the Pyroblast stack goal, cast Fire Blast on cooldown.<br>
+                                            A hit adds one stack. A critical hit adds two.<br>
+                                            Off leaves Fire Blast as a movement and end-of-fight spell.
+                                        </help>
+                                    </label>
+                                </div>
                                 <div class="form-item" v-if="config.talents.missile_barrage">
                                     <label>
                                         <span>Missile Barrage</span>
@@ -1011,11 +1026,31 @@
                                         <label>Extra ABs during first AP</label>
                                         <input type="text" v-model.number="config.rot_abs_ap">
                                     </div>
+                                    <div class="form-item">
+                                        <label><input type="checkbox" v-model="config.rot_arcane_wrath">
+                                            <span>Arcane Wrath on cooldown</span>
+                                            <help>
+                                                Cast Arcane Wrath when it is ready and the cast finishes before the fight ends.<br>
+                                                Its damage gains spell power equal to 5% of maximum mana.<br>
+                                                Arcane Blast and Arcane Missiles stay the rest of the sequence. Missile Barrage is still used first.
+                                            </help>
+                                        </label>
+                                    </div>
                                 </template>
                                 <template v-if="config.rotation == rotations.ROTATION_ST_FROST">
                                     <div class="form-item">
                                         <label><input type="checkbox" v-model="config.rot_ice_lance">
                                             <span>Ice Lance at end of Fingers of Frost</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-item" v-if="config.talents.winters_chill">
+                                        <label><input type="checkbox" v-model="config.rot_winters_chill">
+                                            <span>Spend Winter's Chill with Cone of Cold</span>
+                                            <help>
+                                                Build Winter's Chill with Frostbolt, and with Frost Blast while moving.<br>
+                                                Cone of Cold consumes the debuff at 5 stacks, or earlier if it would fall off before the next Frostbolt lands.<br>
+                                                Fingers of Frost and Brain Freeze stay higher priority.
+                                            </help>
                                         </label>
                                     </div>
                                     <div class="form-item">
@@ -1318,19 +1353,48 @@
                             </fieldset>
                             <fieldset class="config-consumes">
                                 <legend>Consumes</legend>
-                                <div class="form-item" v-if="!config.battle_elixir && !config.guardian_elixir">
+                                <div class="form-item">
                                     <label>Flask</label>
                                     <select v-model="config.flask" @change="calcStats">
                                         <option :value="flasks.FLASK_NONE">None</option>
-                                        <option :value="flasks.FLASK_SUPREME_POWER">Flask of Supreme Power (150sp)</option>
+                                        <option :value="flasks.FLASK_SUPREME_POWER">Flask of Supreme Power (150 sp)</option>
                                         <option :value="flasks.FLASK_DISTILLED_WISDOM">Flask of Distilled Wisdom (2000 mana)</option>
-                                        <!-- <option :value="flasks.FLASK_FROSTWYRM">Flask of the Frostwyrm (125 sp)</option>
-                                        <option :value="flasks.FLASK_PURE_MOJO">Flask of Pure Mojo (45 mp5)</option> -->
                                     </select>
                                 </div>
-                                <div class="form-item" v-if="!config.flask">
+                                <div class="form-item">
+                                    <label>Weapon Oil</label>
+                                    <select v-model="config.weapon_oil" @change="calcStats">
+                                        <option :value="oils.OIL_NONE">None</option>
+                                        <option :value="oils.OIL_BLESSED_WIZARD">Blessed Wizard Oil (60 sp vs undead)</option>
+                                        <option :value="oils.OIL_BRILLIANT_WIZARD">Brilliant Wizard Oil (36 sp, 1% crit)</option>
+                                        <option :value="oils.OIL_BRILLIANT_MANA">Brilliant Mana Oil (15 mp5)</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Spell Power Elixir</label>
+                                    <select v-model="config.elixir_sp" @change="calcStats">
+                                        <option :value="elixirs.ELIXIR_NONE">None</option>
+                                        <option :value="elixirs.ELIXIR_GREATER_ARCANE">Greater Arcane Elixir (35 sp)</option>
+                                        <option :value="elixirs.ELIXIR_ARCANE">Arcane Elixir (20 sp)</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Crit Elixir</label>
+                                    <select v-model="config.elixir_crit" @change="calcStats">
+                                        <option :value="elixirs.ELIXIR_NONE">None</option>
+                                        <option :value="elixirs.ELIXIR_OWL">Elixir of the Owl (25 int, 2% crit)</option>
+                                        <option :value="elixirs.ELIXIR_SAGES">Elixir of the Sages (25 spirit, 2% crit)</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Spirit Elixir</label>
+                                    <select v-model="config.elixir_spirit" @change="calcStats">
+                                        <option :value="elixirs.ELIXIR_NONE">None</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
                                     <label>Battle Elixir</label>
-                                    <select v-model="config.battle_elixir">
+                                    <select v-model="config.battle_elixir" @change="calcStats">
                                         <option :value="elixirs.ELIXIR_NONE">None</option>
                                         <option :value="elixirs.ELIXIR_SPELLPOWER">Spellpower Elixir (58 sp)</option>
                                         <option :value="elixirs.ELIXIR_GURU">Guru's Elixir (20 stats)</option>
@@ -1339,9 +1403,9 @@
                                         <option :value="elixirs.ELIXIR_LIGHTNING_SPEED">Elixir of Lightning Speed (45 haste)</option>
                                     </select>
                                 </div>
-                                <div class="form-item" v-if="!config.flask">
+                                <div class="form-item" >
                                     <label>Guardian Elixir</label>
-                                    <select v-model="config.guardian_elixir">
+                                    <select v-model="config.guardian_elixir" @change="calcStats">
                                         <option :value="elixirs.ELIXIR_NONE">None</option>
                                         <option :value="elixirs.ELIXIR_SPIRIT">Elixir of Spirit (50 spirit)</option>
                                         <option :value="elixirs.ELIXIR_MIGHTY_MAGEBLOOD">Elixir of Mighty Mageblood (30 mp5)</option>
@@ -1351,12 +1415,14 @@
                                 </div>
                                 <div class="form-item">
                                     <label>Food</label>
-                                    <select v-model="config.food">
+                                    <select v-model="config.food" @change="calcStats">
                                         <option :value="foods.FOOD_NONE">None</option>
                                         <option :value="foods.FOOD_SPELL_POWER">Firecracker Salmon (46 sp)</option>
                                         <option :value="foods.FOOD_CRIT">Spiced Worm Burger (40 crit)</option>
                                         <option :value="foods.FOOD_HIT">Snapper Extreme (40 hit)</option>
                                         <option :value="foods.FOOD_HASTE">Imperial Manta Steak (40 haste)</option>
+                                        <option :value="foods.FOOD_INTELLECT">Runn Tum Tuber Surprise (10 int)</option>
+                                        <option :value="foods.FOOD_SPIRIT">Smoked Desert Dumplings (20 spirit)</option>
                                     </select>
                                 </div>
                                 <div class="form-item">
@@ -1985,6 +2051,7 @@
                 dot_targets: 0,
                 target_resistance: 0,
                 target_level: 63,
+                target_undead: false,
                 target_hp: 100,
                 distance: 20,
                 reaction_time: 300,
@@ -2030,6 +2097,10 @@
                 // Consumes
                 food: 0,
                 flask: 0,
+                weapon_oil: 0,
+                elixir_sp: 0,
+                elixir_crit: 0,
+                elixir_spirit: 0,
                 battle_elixir: 0,
                 guardian_elixir: 0,
                 
@@ -2086,6 +2157,9 @@
                 rot_mb_mana: 0,
                 rot_mb_cancel: false,
                 rot_ice_lance: false,
+                rot_arcane_wrath: false,
+                rot_winters_chill: false,
+                rot_fire_blast_hot_streak: false,
                 rot_brain_freeze_fireball: false,
                 rot_brain_freeze_hold: 15,
                 rot_hot_streak_stacks: 3,
@@ -2126,6 +2200,8 @@
                 talents: {
                     wand_specialization: 0,
                     arcane_focus: 0,
+                    improved_channeling: 0,
+                    missile_barrage: 0,
                     arcane_subtlety: 0,
                     magic_absorption: 0,
                     clearcast: 0,
@@ -2134,14 +2210,15 @@
                     arcane_impact: 0,
                     arcane_blast: 0,
                     arcane_shielding: 0,
+                    improved_counterspell: 0,
                     arcane_meditation: 0,
-                    missile_barrage: 0,
+                    arcane_wrath: 0,
                     presence_of_mind: 0,
                     arcane_mind: 0,
                     arcane_instability: 0,
                     arcane_power: 0,
 
-                    wake_of_fire: 0,
+                    imp_fire_blast: 0,
                     incineration: 0,
                     imp_fireball: 0,
                     ignite: 0,
@@ -2283,7 +2360,7 @@
                 is_running_ep: false,
                 active_tab: "gear",
                 item_source: "wowhead",
-                search_item: this.loadFilters("phase:5-")+" ",
+                search_item: this.loadFilters("")+" ",
                 search_gem: "",
                 search_log: "",
                 log_filter: {
@@ -2330,27 +2407,31 @@
 
             data.talent_map[0][0] = "wand_specialization";
             data.talent_map[0][1] = "arcane_focus";
-            data.talent_map[0][3] = "arcane_subtlety";
-            data.talent_map[0][4] = "magic_absorption";
-            data.talent_map[0][5] = "clearcast";
-            data.talent_map[0][6] = "arcane_resilience";
-            data.talent_map[0][7] = "arcane_geometry";
-            data.talent_map[0][8] = "arcane_impact";
-            data.talent_map[0][9] = "arcane_blast";
-            data.talent_map[0][10] = "arcane_shielding";
-            data.talent_map[0][12] = "arcane_meditation";
-            data.talent_map[0][13] = "missile_barrage";
-            data.talent_map[0][14] = "presence_of_mind";
-            data.talent_map[0][15] = "arcane_mind";
-            data.talent_map[0][16] = "arcane_instability";
-            data.talent_map[0][17] = "arcane_power";
+            data.talent_map[0][2] = "improved_channeling";
+            data.talent_map[0][3] = "missile_barrage";
+            data.talent_map[0][4] = "arcane_subtlety";
+            data.talent_map[0][5] = "magic_absorption";
+            data.talent_map[0][6] = "clearcast";
+            data.talent_map[0][7] = "arcane_resilience";
+            data.talent_map[0][8] = "arcane_geometry";
+            data.talent_map[0][9] = "arcane_impact";
+            data.talent_map[0][10] = "arcane_blast";
+            data.talent_map[0][11] = "arcane_shielding";
+            data.talent_map[0][12] = "improved_counterspell";
+            data.talent_map[0][13] = "arcane_meditation";
+            data.talent_map[0][14] = "arcane_wrath";
+            data.talent_map[0][15] = "presence_of_mind";
+            data.talent_map[0][16] = "arcane_mind";
+            data.talent_map[0][17] = "arcane_instability";
+            data.talent_map[0][18] = "arcane_power";
 
-            data.talent_map[1][0] = "wake_of_fire";
+            data.talent_map[1][0] = "imp_fire_blast";
             data.talent_map[1][1] = "incineration";
             data.talent_map[1][2] = "imp_fireball";
             data.talent_map[1][3] = "ignite";
             data.talent_map[1][4] = "flame_throwing";
             data.talent_map[1][5] = "impact";
+            data.talent_map[1][6] = "burning_soul";
             data.talent_map[1][7] = "imp_flamestrike";
             data.talent_map[1][8] = "pyroblast";
             data.talent_map[1][9] = "imp_scorch";
@@ -3923,47 +4004,63 @@
                     stats.spirit+= x;
                 }
 
-                // Flask
                 if (this.config.flask) {
-                    
                     if (this.config.flask == this.flasks.FLASK_SUPREME_POWER)
                         stats.spell_power+= 150;
-                    else if (this.config.flask == this.flasks.FLASK_PURE_MOJO)
-                        stats.mp5+= 45;
                     else if (this.config.flask == this.flasks.FLASK_DISTILLED_WISDOM)
                         stats.bonus_mana = 2000;
                 }
-                else {
-                    // Guardian Elxir
-                    if (this.config.guardian_elixir == this.elixirs.ELIXIR_SPIRIT)
-                        stats.spirit+= 50;
-                    else if (this.config.guardian_elixir == this.elixirs.ELIXIR_MIGHTY_THOUGHTS)
-                        stats.intellect+= 45;
-                    else if (this.config.guardian_elixir == this.elixirs.ELIXIR_MIGHTY_MAGEBLOOD)
-                        stats.mp5+= 30;
-                    else if (this.config.guardian_elixir == this.elixirs.ELIXIR_DRAENIC_WISDOM) {
-                        stats.intellect+= 30;
-                        stats.spirit+= 30;
-                    }
 
-                    // Battle elixir
-                    if (this.config.battle_elixir == this.elixirs.ELIXIR_SPELLPOWER) {
-                        stats.spell_power+= 58;
-                    }
-                    else if (this.config.battle_elixir == this.elixirs.ELIXIR_ACCURACY) {
-                        stats.hit_rating+= 45;
-                    }
-                    else if (this.config.battle_elixir == this.elixirs.ELIXIR_DEADLY_STRIKES) {
-                        stats.crit_rating+= 45;
-                    }
-                    else if (this.config.battle_elixir == this.elixirs.ELIXIR_LIGHTNING_SPEED) {
-                        stats.haste_rating+= 45;
-                    }
-                    else if (this.config.battle_elixir == this.elixirs.ELIXIR_GURU) {
-                        stats.intellect+= 20;
-                        stats.spirit+= 20;
-                    }
+                if (this.config.weapon_oil == this.oils.OIL_BLESSED_WIZARD) {
+                    if (this.config.target_undead)
+                        stats.spell_power+= 60;
                 }
+                else if (this.config.weapon_oil == this.oils.OIL_BRILLIANT_WIZARD) {
+                    stats.spell_power+= 36;
+                    stats.crit+= 1;
+                }
+                else if (this.config.weapon_oil == this.oils.OIL_BRILLIANT_MANA)
+                    stats.mp5+= 15;
+
+                if (this.config.elixir_sp == this.elixirs.ELIXIR_GREATER_ARCANE)
+                    stats.spell_power+= 35;
+                else if (this.config.elixir_sp == this.elixirs.ELIXIR_ARCANE)
+                    stats.spell_power+= 20;
+
+                if (this.config.elixir_crit == this.elixirs.ELIXIR_OWL) {
+                    stats.intellect+= 25;
+                    stats.crit+= 2;
+                }
+                else if (this.config.elixir_crit == this.elixirs.ELIXIR_SAGES){
+                    stats.spirit+= 25;
+                    stats.crit+= 2;
+                }
+                
+
+                if (this.config.guardian_elixir == this.elixirs.ELIXIR_SPIRIT)
+                    stats.spirit+= 50;
+                else if (this.config.guardian_elixir == this.elixirs.ELIXIR_MIGHTY_THOUGHTS)
+                    stats.intellect+= 45;
+                else if (this.config.guardian_elixir == this.elixirs.ELIXIR_MIGHTY_MAGEBLOOD)
+                    stats.mp5+= 30;
+                else if (this.config.guardian_elixir == this.elixirs.ELIXIR_DRAENIC_WISDOM) {
+                    stats.intellect+= 30;
+                    stats.spirit+= 30;
+                }
+
+                if (this.config.battle_elixir == this.elixirs.ELIXIR_SPELLPOWER)
+                    stats.spell_power+= 58;
+                else if (this.config.battle_elixir == this.elixirs.ELIXIR_ACCURACY)
+                    stats.hit_rating+= 45;
+                else if (this.config.battle_elixir == this.elixirs.ELIXIR_DEADLY_STRIKES)
+                    stats.crit_rating+= 45;
+                else if (this.config.battle_elixir == this.elixirs.ELIXIR_LIGHTNING_SPEED)
+                    stats.haste_rating+= 45;
+                else if (this.config.battle_elixir == this.elixirs.ELIXIR_GURU) {
+                    stats.intellect+= 20;
+                    stats.spirit+= 20;
+                }
+
 
                 // Prof: Alchemy
                 if (this.config.prof_alchemy) {
@@ -4007,6 +4104,10 @@
                     stats.hit_rating+= 40;
                 else if (this.config.food == this.foods.FOOD_CRIT)
                     stats.crit_rating+= 40;
+                else if (this.config.food == this.foods.FOOD_INTELLECT)
+                    stats.intellect+= 10;
+                else if (this.config.food == this.foods.FOOD_SPIRIT)
+                    stats.spirit+= 20;
 
                 // Focus magic
                 if (this.config.focus_magic)
@@ -4696,19 +4797,19 @@
 
             setSpec(spec) {
                 if (spec == "arcane") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1055205023100311531-03-0550000001_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20502205003100311531-230500031-005_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_AB_AM;
                 }
                 else if (spec == "fire") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1050205002-00552030130133051-005_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20402205-23550000130135131-005_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FIRE;
                 }
                 else if (spec == "frost") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v10502050030003--0555000331020001251_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20502050030003--0555000331020001251_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROST;
                 }
                 else if (spec == "ffb") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v1-0355003003003304-00550003310003002_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v2-0355003003003304-00550003310003002_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROSTFIRE;
                 }
 

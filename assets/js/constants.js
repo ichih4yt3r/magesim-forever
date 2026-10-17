@@ -29,6 +29,8 @@ export default {
         FOOD_HASTE: 34769,
         FOOD_HIT: 42996,
         FOOD_CRIT: 34756,
+        FOOD_INTELLECT: 18254,
+        FOOD_SPIRIT: 20452,
     },
     flasks: {
         FLASK_NONE: 0,
@@ -37,8 +39,34 @@ export default {
         FLASK_SUPREME_POWER: 46379,
         FLASK_DISTILLED_WISDOM: 46380,
     },
+    oils: {
+        OIL_NONE: 0,
+        OIL_BLESSED_WIZARD: 23123,
+        OIL_BRILLIANT_WIZARD: 20749,
+        OIL_BRILLIANT_MANA: 20748,
+    },
     elixirs: {
         ELIXIR_NONE: 0,
+        // Crit Elixirs
+        ELIXIR_OWL: 1250940,
+        ELIXIR_SAGES: 1250787,
+        ELIXIR_WHALE:250348,
+
+        // Spellpower Elixirs
+        ELIXIR_GREATER_ARCANE: 13454,
+        ELIXIR_ARCANE: 9155,
+        
+        // MP5 Elixirs
+        ELIXIR_GREATER_MAGEBLOOD: 250341,
+        ELIXIR_MAGEBLOOD: 20007,
+
+        // Intellect Elixirs
+        ELIXIR_GREATER_INTELLECT: 9179,
+
+        // Spirit Elixirs
+        ELIXIR_GREATER_SPIRIT: 250347,
+
+
         // Battle
         ELIXIR_SPELLPOWER: 40070,
         ELIXIR_GURU: 40076,

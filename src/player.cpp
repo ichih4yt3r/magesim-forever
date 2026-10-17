@@ -49,6 +49,9 @@ void Player::reset()
     mana_ruby = 1;
     // mana_sapphire = 3;
     ab_streak = 0;
+    ab_spell_power = 0;
+    ab_sp_stacks = 0;
+    ice_lance_empowered = false;
     used_dark_rune = false;
     black_magic = false;
     has_pre_cast = false;
@@ -147,7 +150,7 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
 {
     double t = Unit::baseCastTime(spell);
 
-    if (spell->id == spell::FROSTBOLT && talents.imp_frostbolt)
+    if ((spell->id == spell::FROSTBOLT || spell->id == spell::FROST_BLAST) && talents.imp_frostbolt)
         t -= talents.imp_frostbolt * 0.1;
     if (spell->id == spell::FROSTBOLT && talents.empowered_frostbolt)
         t -= talents.empowered_frostbolt * 0.1;
@@ -348,7 +351,7 @@ double Player::spellCoeffMod(std::shared_ptr<spell::Spell> spell) const
         }
     }
 
-    if (talents.empowered_frostbolt && spell->id == spell::FROSTBOLT)
+    if (talents.empowered_frostbolt && (spell->id == spell::FROSTBOLT || spell->id == spell::FROST_BLAST))
         coeff += talents.empowered_frostbolt * 0.05;
 
     return coeff;
@@ -412,28 +415,19 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     if (talents.molten_fury && state.hpRemain() <= 35.0 && spell->id != spell::LIVING_BOMB)
         multi *= 1 + (talents.molten_fury * 0.06);
 
-    if (hasBuff(buff::ARCANE_BLAST, true)) {
-        double ab = 0.10;
-        if (glyphs.arcane_blast)
-            ab += 0.03;
-        multi *= 1 + ab * buffStacks(buff::ARCANE_BLAST, true);
-    }
-
     if (config.t5_2set && spell->id == spell::ARCANE_BLAST)
         multi *= 1.05;
 
     if (spell->id == spell::ICE_LANCE && isFrozen()) {
         if (glyphs.ice_lance)
-            multi *= 4;
-        else
             multi *= 3;
+        else
+            multi *= 2;
     }
 
     // Additive category
     additive = 1;
 
-    if (talents.fire_power && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE))
-        additive += talents.fire_power * 0.02;
     if (spell->id == spell::SCORCH && glyphs.scorch)
         additive += 0.2;
     if (spell->id == spell::FROSTFIRE_BOLT && glyphs.frostfire)
@@ -479,6 +473,29 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     multi *= additive;
 
     return multi;
+}
+
+double Player::firePowerMultiplier(std::shared_ptr<spell::Spell> spell, std::shared_ptr<target::Target> target, double t) const
+{
+    if (!talents.fire_power || !target)
+        return 1;
+    if (spell->school != SCHOOL_FIRE && spell->school != SCHOOL_FROSTFIRE)
+        return 1;
+
+    int effects = 0;
+    if (target->hasDebuff(debuff::IMPROVED_SCORCH))
+        effects++;
+    if (t < target->t_ignite + 4.0)
+        effects++;
+    if (t < target->t_fireball + 8.0)
+        effects++;
+    if (t < target->t_pyro_dot + 12.0)
+        effects++;
+
+    double bonus = talents.fire_power * 0.01 * effects;
+    if (bonus > 0.12)
+        bonus = 0.12;
+    return 1.0 + bonus;
 }
 
 double Player::baseManaCost(std::shared_ptr<spell::Spell> spell) const
@@ -546,6 +563,8 @@ double Player::getSpellPower(School school) const
     if (hasBuff(buff::FLAME_CAP) && (school == SCHOOL_FIRE || school == SCHOOL_FROSTFIRE))
         sp += 80.0;
 
+    sp += ab_spell_power;
+
     if (hasBuff(buff::BLOOD_FURY))
         sp *= 1.1;
 
@@ -612,7 +631,7 @@ bool Player::hasChillEffect(std::shared_ptr<spell::Spell> spell) const
     // Fingers of frost still seem to proc even with the glyph? unconfirmed
     // if (spell->id == spell::FROSTBOLT)
         // return !glyphs.frostbolt;
-    if (spell->id == spell::CONE_OF_COLD || spell->id == spell::FROSTFIRE_BOLT || spell->id == spell::FROSTBOLT)
+    if (spell->id == spell::CONE_OF_COLD || spell->id == spell::FROSTFIRE_BOLT || spell->id == spell::FROSTBOLT || spell->id == spell::FROST_BLAST)
         return true;
 
     return false;
@@ -657,6 +676,11 @@ std::vector<action::Action> Player::onBuffGain(const State& state, std::shared_p
     // }
     else if (buff->id == buff::ARCANE_BLAST) {
         ab_streak++;
+        int stacks = buffStacks(buff::ARCANE_BLAST);
+        if (stacks > ab_sp_stacks) {
+            ab_spell_power += 0.15 * getIntellect() * (stacks - ab_sp_stacks);
+            ab_sp_stacks = stacks;
+        }
     }
     else if (buff->id == buff::BRAIN_FREEZE) {
         t_brain_freeze = state.t;
@@ -691,8 +715,11 @@ std::vector<action::Action> Player::onBuffExpire(const State& state, std::shared
         actions.push_back(buffExpireAction<buff::DeadlyPrecision>());
     if (buff->id == buff::FIRE_WARD)
         fire_ward = 0;
-    if (buff->id == buff::ARCANE_BLAST)
+    if (buff->id == buff::ARCANE_BLAST) {
         ab_streak = 0;
+        ab_spell_power = 0;
+        ab_sp_stacks = 0;
+    }
     if (buff->id == buff::BRAIN_FREEZE)
         actions.push_back(cooldownAction<cooldown::BrainFreeze>());
     if (buff->id == buff::HOT_STREAK)
@@ -736,7 +763,9 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
 
     // Cooldowns
     if (spell->id == spell::FIRE_BLAST)
-        actions.push_back(cooldownAction<cooldown::FireBlast>(talents.wake_of_fire));
+        actions.push_back(cooldownAction<cooldown::FireBlast>(talents.imp_fire_blast));
+    if (spell->id == spell::ARCANE_WRATH)
+        actions.push_back(cooldownAction<cooldown::ArcaneWrath>());
     if (spell->id == spell::ARCANE_BARRAGE)
         actions.push_back(cooldownAction<cooldown::ArcaneBarrage>());
     if (spell->id == spell::BLAST_WAVE)
@@ -790,7 +819,8 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     if (hasBuff(buff::GHOST_FINGERS))
         actions.push_back(buffExpireAction<buff::GhostFingers>());
 
-    if (hasBuff(buff::PRESENCE_OF_MIND) && spell->cast_time && !spell->channeling) {
+    bool presence = hasBuff(buff::PRESENCE_OF_MIND) && spell->cast_time && !spell->channeling;
+    if (presence) {
         actions.push_back(buffExpireAction<buff::PresenceOfMind>());
         actions.push_back(cooldownAction<cooldown::ArcanePower>(1.5));
     }
@@ -800,8 +830,6 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
 
     if (spell->id == spell::ARCANE_BLAST)
         actions.push_back(buffAction<buff::ArcaneBlast>());
-    else if (hasBuff(buff::ARCANE_BLAST) && spell->school == SCHOOL_ARCANE && spell->min_dmg > 0)
-        actions.push_back(buffExpireAction<buff::ArcaneBlast>());
 
     if (hasBuff(buff::BRAIN_FREEZE) && spell->actual_cast_time == 0 && (spell->id == spell::FROSTFIRE_BOLT || spell->id == spell::FIREBALL)) {
         // 20% chance - Sorta confirmed from elitist jerks
@@ -818,7 +846,10 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
                 pending_ptl = true;
         }
     }
-    if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK)) {
+    if (spell->id == spell::ICE_LANCE)
+        ice_lance_empowered = isFrozen();
+
+    if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK) && !presence) {
         // 20% chance - Sorta confirmed from elitist jerks
         if (!config.t8_4set || random<int>(0, 4) != 0)
             actions.push_back(buffExpireAction<buff::HotStreak>());
@@ -839,19 +870,19 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     }
 
     if (talents.missile_barrage) {
-        if (spell->id == spell::ARCANE_BLAST ||
+        // 2 points: 40% from Arcane Blast, 20% from Arcane Wrath and the bolt spells.
+        int chance = 0;
+        if (spell->id == spell::ARCANE_BLAST)
+            chance = talents.missile_barrage * 20;
+        else if (spell->id == spell::ARCANE_WRATH ||
             spell->id == spell::ARCANE_BARRAGE ||
             spell->id == spell::FIREBALL ||
             spell->id == spell::FROSTBOLT ||
             spell->id == spell::FROSTFIRE_BOLT)
-        {
-            int chance = talents.missile_barrage * 20;
-            if (spell->id == spell::ARCANE_BLAST)
-                chance *= 2;
+            chance = talents.missile_barrage * 10;
 
-            if (random<int>(0, 99) < chance)
-                actions.push_back(buffAction<buff::MissileBarrage>());
-        }
+        if (chance > 0 && random<int>(0, 99) < chance)
+            actions.push_back(buffAction<buff::MissileBarrage>());
     }
 
     /* if (spell->id == spell::MIRROR_IMAGE) {
@@ -1103,7 +1134,8 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
             }
         }
         else {
-            if (talents.clearcast) {
+            if (talents.clearcast && instance.spell->cast_in_combat && instance.spell->clearcast_rolled_tick != instance.tick) {
+                instance.spell->clearcast_rolled_tick = instance.tick;
                 double chance = talents.clearcast * 2.0;
                 // Less chance per tick for channelled spells
                 if (instance.spell->ticks)
@@ -1242,21 +1274,42 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
         }
     }
 
-    if (talents.hot_streak && !instance.spell->dot) {
-        if (instance.spell->id == spell::FIREBALL ||
+    if (talents.hot_streak && !instance.spell->dot && instance.result != spell::MISS) {
+        int charges = 0;
+        if (instance.spell->id == spell::FIRE_BLAST)
+            charges = instance.result == spell::CRIT ? 2 : 1;
+        else if (instance.result == spell::CRIT && (
+            instance.spell->id == spell::FIREBALL ||
             instance.spell->id == spell::SCORCH ||
-            instance.spell->id == spell::FROSTFIRE_BOLT ||
-            instance.spell->id == spell::FIRE_BLAST)
+            instance.spell->id == spell::FROSTFIRE_BOLT))
         {
-            
-            if (instance.result == spell::CRIT && hotstreak_stacks < 3) {
-                hotstreak_stacks++;
-                actions.push_back(buffAction<buff::HotStreak>());
-            }
-
-    
-            
+            charges = 1;
         }
+
+        for (int i = 0; i < charges && hotstreak_stacks < 3; ++i) {
+            hotstreak_stacks++;
+            actions.push_back(buffAction<buff::HotStreak>());
+        }
+    }
+
+    if (instance.result != spell::MISS && talents.winters_chill) {
+        bool apply_chill = instance.spell->id == spell::FROSTBOLT || instance.spell->id == spell::FROST_BLAST;
+        if (instance.spell->id == spell::ICE_LANCE && ice_lance_empowered)
+            apply_chill = true;
+        if (apply_chill) {
+            int chance = talents.winters_chill * 20;
+            if (chance >= 100 || random<int>(0, 99) < chance)
+                actions.push_back(debuffAction<debuff::WintersChill>(target));
+        }
+    }
+
+    if (instance.spell->id == spell::ICE_LANCE)
+        ice_lance_empowered = false;
+
+    if (instance.result != spell::MISS && talents.missile_barrage && instance.spell->id == spell::ARCANE_MISSILES) {
+        int chance = talents.missile_barrage * 20;
+        if (random<int>(0, 99) < chance)
+            actions.push_back(buffAction<buff::MissileBarrage>());
     }
 
     if (talents.fingers_of_frost) {
@@ -1946,6 +1999,21 @@ action::Action Player::useCooldown(const State& state)
     return { action::TYPE_NONE };
 }
 
+int Player::fireBlastRange() const
+{
+    // Base Fire Blast is 20 yards. Improved Fire Blast adds 8 yards, then 15.
+    if (talents.imp_fire_blast >= 2)
+        return 35;
+    if (talents.imp_fire_blast == 1)
+        return 28;
+    return 20;
+}
+
+bool Player::canFireBlast() const
+{
+    return !hasCooldown(cooldown::FIRE_BLAST) && config.distance <= fireBlastRange();
+}
+
 bool Player::canBlast(const State& state) const
 {
     // Lets assume we cant blast for 30+ seconds to save computing time
@@ -1953,7 +2021,7 @@ bool Player::canBlast(const State& state) const
         return false;
 
     auto ab = std::make_shared<spell::ArcaneBlast>();
-    auto const cast_time = 2.5 * castHaste();
+    auto const cast_time = 1.5 * castHaste();
     auto const base_cost = baseManaCost(ab);
 
     double cur_mana = mana;
@@ -2190,7 +2258,7 @@ action::Action Player::nextAction(const State& state)
         if (!hasBuff(buff::PRESENCE_OF_MIND)) {
             // Last second finishers
             auto scorch = std::make_shared<spell::Scorch>();
-            if (state.duration - state.t < castTime(scorch) && !hasCooldown(cooldown::FIRE_BLAST))
+            if (state.duration - state.t < castTime(scorch) && canFireBlast())
                 return spellAction<spell::FireBlast>(target);
             if (state.duration - state.t < castTime(main_spell) + travelTime(main_spell))
                 return spellAction<spell::Scorch>(target);
@@ -2200,7 +2268,7 @@ action::Action Player::nextAction(const State& state)
                 if (config.targets > 2 && config.distance <= 10) {
                     return spellAction<spell::ArcaneExplosion>();
                 }
-                else if (!hasCooldown(cooldown::FIRE_BLAST)) {
+                else if (canFireBlast()) {
                     return spellAction<spell::FireBlast>(target);
                 }
                 else {
@@ -2212,6 +2280,9 @@ action::Action Player::nextAction(const State& state)
                 }
             }
         }
+
+        if (config.rot_fire_blast_hot_streak && talents.hot_streak && hotstreak_stacks < pyro_at && canFireBlast())
+            return spellAction<spell::FireBlast>(target);
 
         return spellAction(main_spell, target);
     }
@@ -2225,6 +2296,13 @@ action::Action Player::nextAction(const State& state)
         bool has_mb = canReactTo(buff::MISSILE_BARRAGE, state.t);
         auto ab = std::make_shared<spell::ArcaneBlast>();
 
+        if (config.rot_arcane_wrath && !hasCooldown(cooldown::ARCANE_WRATH)) {
+            auto wrath = std::make_shared<spell::ArcaneWrath>();
+            double ct = castTime(wrath);
+            if ((ct == 0 || !state.isMoving()) && ct <= state.duration - state.t)
+                return spellAction(wrath, target);
+        }
+
         if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND)) {
             if (config.targets > 2 && config.distance <= 10) {
                 return spellAction<spell::ArcaneExplosion>();
@@ -2232,7 +2310,7 @@ action::Action Player::nextAction(const State& state)
             else if (talents.arcane_barrage && !hasCooldown(cooldown::ARCANE_BARRAGE)) {
                 return spellAction<spell::ArcaneBarrage>(target);
             }
-            else if (!hasCooldown(cooldown::FIRE_BLAST)) {
+            else if (canFireBlast()) {
                 return spellAction<spell::FireBlast>(target);
             }
             else {
@@ -2243,7 +2321,7 @@ action::Action Player::nextAction(const State& state)
                 return action;
             }
         }
-        else if (state.duration - state.t < castTime(ab) && !hasCooldown(cooldown::FIRE_BLAST))
+        else if (state.duration - state.t < castTime(ab) && canFireBlast())
             return spellAction<spell::FireBlast>(target);
         // AB until the end
         else if (canBlast(state))
@@ -2289,11 +2367,22 @@ action::Action Player::nextAction(const State& state)
                 return spellAction<spell::Fireball>(target);
             return spellAction<spell::FrostfireBolt>(target);
         }
+        else if (config.rot_winters_chill && talents.winters_chill) {
+            int stacks = target->debuffStacks(debuff::WINTERS_CHILL);
+            double remain = stacks ? target->t_winters_chill - state.t : 0;
+            auto bolt = std::make_shared<spell::Frostbolt>();
+            bool expire_before_bolt = stacks > 0 && remain <= castTime(bolt) + travelTime(bolt);
+            if ((stacks >= 5 || expire_before_bolt) && !hasCooldown(cooldown::CONE_OF_COLD))
+                return spellAction<spell::ConeOfCold>(target);
+            if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND))
+                return spellAction<spell::FrostBlast>(target);
+            return spellAction(bolt, target);
+        }
         else if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND)) {
             if (config.targets > 2 && config.distance <= 10) {
                 return spellAction<spell::ArcaneExplosion>();
             }
-            else if (!hasCooldown(cooldown::FIRE_BLAST)) {
+            else if (canFireBlast()) {
                 return spellAction<spell::FireBlast>(target);
             }
             else {

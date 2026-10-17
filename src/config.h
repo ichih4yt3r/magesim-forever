@@ -92,6 +92,9 @@ struct Config
     double rot_mb_mana = 0;
     bool rot_mb_cancel = false;
     bool rot_ice_lance = false;
+    bool rot_arcane_wrath = false;
+    bool rot_winters_chill = false;
+    bool rot_fire_blast_hot_streak = false;
     bool rot_brain_freeze_fireball = false;
     double rot_brain_freeze_hold = 15;
     int rot_hot_streak_stacks = 3;

@@ -9,10 +9,12 @@ namespace spell
         ARCANE_TORRENT = 28730,
         ARCANE_BARRAGE = 44781,
         ARCANE_BLAST = 1239700,
+        ARCANE_WRATH = 1239800,
         ARCANE_EXPLOSION = 10202,
         ARCANE_MISSILES = 25345,
         BLIZZARD = 42940,
         FROSTBOLT = 25304,
+        FROST_BLAST = 1239801,
         FIREBALL = 42833,
         FIREBALL_DOT = 4283300,
         FROSTFIRE_BOLT = 1237313,
@@ -92,6 +94,8 @@ namespace spell
         bool can_proc = true;
         bool tick_refresh = true;
         bool dynamic = false;
+        bool cast_in_combat = true;
+        int clearcast_rolled_tick = -1;
         int ticks = 0;
         int t_interval = 1;
         const School school = SCHOOL_NONE;
@@ -138,10 +142,25 @@ namespace spell
         ArcaneBlast() : Spell(ARCANE_BLAST, "Arcane Blast", SCHOOL_ARCANE)
         {
             cost = 15;
-            min_dmg = 364;
-            max_dmg = 424;
-            cast_time = 2.5;
-            coeff = 2.5/3.5;
+            min_dmg = 231;
+            max_dmg = 267;
+            cast_time = 1.5;
+            coeff = 1.5/3.5;
+        }
+    };
+
+    struct ArcaneWrath : Spell
+    {
+        // Forever has not published this tooltip. Damage, mana, coefficient,
+        // and travel match Fireball, which the notes describe as the baseline.
+        ArcaneWrath() : Spell(ARCANE_WRATH, "Arcane Wrath", SCHOOL_ARCANE)
+        {
+            cost = 19;
+            min_dmg = 439;
+            max_dmg = 529;
+            cast_time = 3.5;
+            coeff = 1;
+            speed = 24;
         }
     };
 
@@ -198,6 +217,20 @@ namespace spell
             cast_time = 3;
             coeff = 3/3.5;
             speed = 28;
+        }
+    };
+
+    struct FrostBlast : Spell
+    {
+        // Forever has not published this tooltip. Classic Frostbolt rank 1 is
+        // 18-20 damage and 25 mana. This is a little more of both.
+        FrostBlast() : Spell(FROST_BLAST, "Frost Blast", SCHOOL_FROST)
+        {
+            cost = 4;
+            min_dmg = 22;
+            max_dmg = 26;
+            cast_time = 1.5;
+            coeff = 1.5/3.5;
         }
     };
 

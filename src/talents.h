@@ -26,19 +26,22 @@ struct Talents
 
     /*Changed*/
     int arcane_focus = 0; // 1% hit with arcane spells
-    int arcane_subtley = 0; // reduces target resistance of all spells by 8 x2, and threat of arcane spells by 15% x2
+    int arcane_subtlety = 0; // reduces target resistance of all spells by 8 x2, and threat of arcane spells by 15% x2
     int magic_absorption = 0; // increase all res by 5, all spells fully resisted restores 1% total mana. no more then 1 per sec
+    int arcane_resilience = 0;
     int arcane_impact = 0; // crit of arcane spells by 2% x 3
     int arcane_meditation = 0; // 17 33 50 mana regen while casting
-    int missile_barrage = 0; //AB 40% chance; fb frb ffb 20% chance to reduce channel of AM by 50% reduce mana by 100%, missile fire ever 0.5s
+    int missile_barrage = 0; // 2 pts: 40% from Arcane Blast, 20% from Arcane Wrath, Fireball, Frostbolt, Frostfire Bolt
     int arcane_mind = 0; // 2% intellect x5, increase arcane Crit Damage by 20% x5
     int arcane_instability = 0; // 1% damage of all spells, 1% crit of all attacks
     int arcane_power = 0; // 15s deal 30% more damage while costing 30% MORE mana
 
     /* NEW */
-    int arcane_blast = 0; // NEW 2.5s cast, some dmg, 10% increased damage, 175% mana, up to 4, last 8s or any other damage spell cast.
+    int arcane_blast = 0; // 1.5s cast. 15% intellect spell power per stack, up to 4, for 15s from the first stack. Mana +175% per stack.
     int arcane_geometry = 0; //Arcane Spell Range by 3 x2
-    int improved_channeling = 0; // 20% x5 chance to avoid interuption by damage while channeling AM and 14% x5 casting AB 
+    int improved_channeling = 0; // 20% x5 chance to avoid interuption by damage while channeling AM and 14% x5 casting AB
+    int improved_counterspell = 0;
+    int arcane_wrath = 0; 
 
 
 
@@ -56,12 +59,14 @@ struct Talents
     int living_bomb = 0;
 
     // remained unchanged and IN
-    int imp_fire_blast = 0; // changed to wake of fire
+    int imp_fire_blast = 0; // Fire Blast cooldown -1/-2 sec, range +8/+15 yards
     int flame_throwing = 0; // 3meters range x2
+    int impact = 0;
     int master_of_elements = 0;
     int critical_mass = 0;
     int blast_weave = 0;
-    int fire_power = 0;
+    int blast_wave = 0;
+    int fire_power = 0; // 1% fire damage per qualifying effect per point, cap 12%
 
     // Changed
     int incineration = 0;
@@ -74,7 +79,6 @@ struct Talents
     int combustion = 0; // increased fire crit strike chance by 10%, until 4 crits (not dots). 
 
     // NEW
-    int wake_of_fire = 0; //reduce FBlast by 1sec x2.
     int hot_streak = 0; // non-dot Crits grant Buff, reduces Pyroblast cast time by 25% x3 (75% faster or 1.5sec)
     
 
@@ -94,6 +98,7 @@ struct Talents
 
     // remained unchanged and IN
     int imp_frostbolt = 0; //
+    int imp_blizzard = 0;
     int ice_shards = 0; //20% crit x5 damage bonus for frost spells (100% crit chance)
     int piercing_ice = 0; // 2% damage of frost spells - up to 6% total.
 
@@ -104,11 +109,11 @@ struct Talents
     int shatter = 0;
     int imp_cone_of_cold = 0;
     int cold_snap = 0;
-    int winters_chill = 0;
+    int winters_chill = 0; // 20% per rank to apply. Stacks make the next Cone of Cold hit harder, then are consumed.
 
 
     // NEW
-    int ice_lance = 0; // damage isntant 30yd 45 mana, 300% on frozen target.
+    int ice_lance = 0; // Instant frost damage. Frozen targets take x2 damage (x3 with the glyph).
     int fingers_of_frost = 0;
      
 

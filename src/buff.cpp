@@ -41,8 +41,9 @@ ArcaneBlast::ArcaneBlast()
 {
     id = ARCANE_BLAST;
     name = "Arcane Blast";
-    duration = 8;
+    duration = 15;
     max_stacks = 4;
+    stack_refresh = false;
     snapshot = true;
 }
 

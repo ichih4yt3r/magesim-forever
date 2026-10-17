@@ -20,6 +20,9 @@ public:
     unsigned long long dmg;
     double ignite_dmg;
     double t_ignite;
+    double t_fireball = -20;
+    double t_pyro_dot = -20;
+    double t_winters_chill = -20;
     double t_living_bomb;
     double t_pyroblast;
 

@@ -44,6 +44,9 @@ public:
     int mana_citrine;
     int mana_sapphire;
     int ab_streak;
+    double ab_spell_power;
+    int ab_sp_stacks;
+    bool ice_lance_empowered;
     bool used_dark_rune;
     bool black_magic;
     bool has_pre_cast;
@@ -97,6 +100,8 @@ public:
     double spellCoeffMod(std::shared_ptr<spell::Spell> spell) const;
 
     double buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const State& state) const;
+
+    double firePowerMultiplier(std::shared_ptr<spell::Spell> spell, std::shared_ptr<target::Target> target, double t) const;
 
     double baseManaCost(std::shared_ptr<spell::Spell> spell) const;
 
@@ -169,6 +174,10 @@ public:
     int evocationTicks() const;
 
     action::Action useCooldown(const State& state);
+
+    int fireBlastRange() const;
+
+    bool canFireBlast() const;
 
     bool canBlast(const State& state) const;
 

@@ -29,6 +29,7 @@ namespace cooldown
         DRAGONS_BREATH = 42950,
         CONE_OF_COLD = 42931,
         ARCANE_BARRAGE = 44781,
+        ARCANE_WRATH = 1239800,
         COMBUSTION = 29977,
         ARCANE_POWER = 12042,
         PRESENCE_OF_MIND = 12043,
@@ -195,10 +196,11 @@ namespace cooldown
     {
 
     public:
-        FireBlast(int wake_of_fire = 0)
+        FireBlast(int imp_fire_blast = 0)
         {
             id = FIRE_BLAST;
-            duration = 8 - wake_of_fire * 1.0;
+            // Base 8s. Improved Fire Blast cuts 1s per point (7s / 6s).
+            duration = 8 - imp_fire_blast * 1.0;
         }
 
     };
@@ -211,6 +213,18 @@ namespace cooldown
         {
             id = ARCANE_BARRAGE;
             duration = 3;
+        }
+
+    };
+
+    class ArcaneWrath : public Cooldown
+    {
+
+    public:
+        ArcaneWrath()
+        {
+            id = ARCANE_WRATH;
+            duration = 6;
         }
 
     };

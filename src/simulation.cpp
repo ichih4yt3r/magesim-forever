@@ -671,6 +671,9 @@ void Simulation::cast(std::shared_ptr<unit::Unit> unit, std::shared_ptr<spell::S
 
 void Simulation::onCastStart(std::shared_ptr<unit::Unit> unit, std::shared_ptr<spell::Spell> spell, std::shared_ptr<target::Target> target)
 {
+    spell->cast_in_combat = state.inCombat();
+    spell->clearcast_rolled_tick = -1;
+
     logCastStart(unit, spell, target);
     onCastStartProc(unit, spell, target);
 
@@ -817,6 +820,7 @@ void Simulation::dotApply(std::shared_ptr<unit::Unit> unit, std::shared_ptr<spel
             dot.dmg += round(leftover / 2.0);
             pushDotTick(unit, dot, target);
         }
+        target->t_ignite = state.t;
     }
     else {
         // Remove all dot ticks and create new ones
@@ -846,6 +850,11 @@ void Simulation::dotApply(std::shared_ptr<unit::Unit> unit, std::shared_ptr<spel
             for (int i = 1 + queued_ticks; i <= spell->ticks; i++)
                 pushDot(unit, spell, target, i, last_tick - queued_ticks * spell->t_interval);
         }
+
+        if (spell->id == spell::FIREBALL_DOT)
+            target->t_fireball = state.t;
+        else if (spell->id == spell::PYROBLAST_DOT)
+            target->t_pyro_dot = state.t;
     }
 }
 
@@ -859,6 +868,13 @@ void Simulation::onCastSuccessProc(std::shared_ptr<unit::Unit> unit, std::shared
 {
     auto actions = unit->onCastSuccessProc(state, spell, target);
     processActions(unit, actions);
+
+    if (spell->id == spell::CONE_OF_COLD) {
+        for (auto const& tar : state.targets) {
+            if (tar->hasDebuff(debuff::WINTERS_CHILL))
+                onDebuffExpire(tar, std::make_shared<debuff::WintersChill>());
+        }
+    }
 
     // Special for fetish of volatile power
     if (unit->id != 1) {
@@ -1161,6 +1177,8 @@ void Simulation::onBuffGainAll(std::shared_ptr<buff::Buff> buff)
 void Simulation::onDebuffGain(std::shared_ptr<target::Target> target, std::shared_ptr<debuff::Debuff> debuff)
 {
     int stacks = target->addDebuff(debuff);
+    if (debuff->id == debuff::WINTERS_CHILL)
+        target->t_winters_chill = state.t + debuff->duration;
     removeDebuffExpiration(target, debuff);
     pushDebuffExpire(target, debuff);
 
@@ -1327,8 +1345,6 @@ double Simulation::critChance(std::shared_ptr<unit::Unit> unit, std::shared_ptr<
 
     if (config.debuff_spell_crit || target->hasDebuff(debuff::IMPROVED_SCORCH))
         crit_debuff += 5.0;
-    else if (target->hasDebuff(debuff::WINTERS_CHILL))
-        crit_debuff += target->debuffStacks(debuff::WINTERS_CHILL);
 
     if (config.debuff_crit)
         crit_debuff += 3.0;
@@ -1406,7 +1422,9 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
         return dmg;
 
     if (spell->coeff) {
-        auto const sp = unit->getSpellPower(spell->school);
+        double sp = unit->getSpellPower(spell->school);
+        if (spell->id == spell::ARCANE_WRATH && unit->id == player->id)
+            sp += player->maxMana() * 0.05;
         double coeff = spell->coeff;
 
         coeff += unit->spellCoeffMod(spell);
@@ -1415,6 +1433,12 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
             coeff /= spell->ticks;
 
         dmg += sp * coeff;
+
+        if (spell->id == spell::CONE_OF_COLD && target->hasDebuff(debuff::WINTERS_CHILL)) {
+            int stacks = target->debuffStacks(debuff::WINTERS_CHILL);
+            dmg += sp * 0.07 * stacks;
+            dmg *= 1.0 + 0.05 * stacks;
+        }
     }
 
     dmg *= buffDmgMultiplier(unit, spell);
@@ -1423,6 +1447,9 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
         dmg *= 10.0 / config.targets;
 
     dmg *= debuffDmgMultiplier(unit, spell, target);
+
+    if (unit->id == player->id)
+        dmg *= player->firePowerMultiplier(spell, target, state.t);
 
     return dmg;
 }
