@@ -1007,9 +1007,10 @@
                                     <label>
                                         <span>Missile Barrage</span>
                                         <help>
-                                            Arcane Missiles is cast as soon as Missile Barrage can be reacted to, ahead of other spells and mana recovery.<br>
+                                            Arcane Missiles is cast when Missile Barrage can be reacted to, ahead of other spells and mana recovery.<br>
+                                            Set an Arcane Blast stack hold below to wait. 0 fires as soon as the proc is ready.<br>
                                             The proc makes Arcane Missiles cost no mana, so it is cast even when other spells cannot be afforded.<br>
-                                            An in-progress cast is stopcast once the proc is noticed. Uses the Reaction time setting (ms).
+                                            An in-progress cast is stopcast once the proc is noticed and the stack hold is met. Uses the Reaction time setting (ms).
                                         </help>
                                     </label>
                                 </div>
@@ -1021,6 +1022,47 @@
                                     <div class="form-item">
                                         <label>AB without Missile Barrage above mana %</label>
                                         <input type="text" v-model.number="config.rot_ab_no_mb_mana">
+                                    </div>
+                                    <div class="form-item">
+                                        <label>
+                                            <span>Filler spell</span>
+                                            <help>
+                                                Cast this instead of Arcane Blast when you are not building Arcane Blast stacks for Arcane Wrath or Arcane Missiles.<br>
+                                                Cast-time fillers are skipped while moving. Fire Blast and Arcane Barrage are skipped while on cooldown.
+                                            </help>
+                                        </label>
+                                        <select v-model.number="config.rot_filler">
+                                            <option :value="0">Arcane Blast</option>
+                                            <option :value="42833">Fireball</option>
+                                            <option :value="25304">Frostbolt</option>
+                                            <option :value="1237313">Frostfire Bolt</option>
+                                            <option :value="10207">Scorch</option>
+                                            <option :value="18809">Pyroblast</option>
+                                            <option :value="25306">Fire Blast</option>
+                                            <option :value="10202">Arcane Explosion</option>
+                                            <option :value="44781" v-if="config.talents.arcane_barrage">Arcane Barrage</option>
+                                            <option :value="1240047" v-if="config.talents.ice_lance">Ice Lance</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-item">
+                                        <label>
+                                            <span>Hold first Arcane Missiles until AB stacks</span>
+                                            <help>
+                                                The first Missile Barrage waits until Arcane Blast has at least this many stacks.<br>
+                                                0 fires Arcane Missiles as soon as the proc is ready.
+                                            </help>
+                                        </label>
+                                        <input type="text" v-model.number="config.rot_am_ab">
+                                    </div>
+                                    <div class="form-item">
+                                        <label>
+                                            <span>Hold later Arcane Missiles until AB stacks</span>
+                                            <help>
+                                                After the first Arcane Missiles, every later Missile Barrage waits for this many Arcane Blast stacks.<br>
+                                                Use 1, 2, 3, or 4. 0 fires as soon as the proc is ready.
+                                            </help>
+                                        </label>
+                                        <input type="text" v-model.number="config.rot_am_ab_after">
                                     </div>
                                     <div class="form-item">
                                         <label>Extra ABs during first AP</label>
@@ -1035,6 +1077,26 @@
                                                 Arcane Blast and Arcane Missiles stay the rest of the sequence. Missile Barrage is still used first.
                                             </help>
                                         </label>
+                                    </div>
+                                    <div class="form-item" v-if="config.rot_arcane_wrath">
+                                        <label>
+                                            <span>Hold first Arcane Wrath until AB stacks</span>
+                                            <help>
+                                                The first Arcane Wrath waits until Arcane Blast has at least this many stacks.<br>
+                                                0 casts it whenever it is ready.
+                                            </help>
+                                        </label>
+                                        <input type="text" v-model.number="config.rot_arcane_wrath_ab">
+                                    </div>
+                                    <div class="form-item" v-if="config.rot_arcane_wrath">
+                                        <label>
+                                            <span>Hold later Arcane Wrath until AB stacks</span>
+                                            <help>
+                                                After the first Arcane Wrath, every later one waits for this many Arcane Blast stacks.<br>
+                                                Use 1, 2, 3, or 4. 0 casts later Arcane Wraths on cooldown.
+                                            </help>
+                                        </label>
+                                        <input type="text" v-model.number="config.rot_arcane_wrath_ab_after">
                                     </div>
                                 </template>
                                 <template v-if="config.rotation == rotations.ROTATION_ST_FROST">
@@ -2158,6 +2220,11 @@
                 rot_mb_cancel: false,
                 rot_ice_lance: false,
                 rot_arcane_wrath: false,
+                rot_arcane_wrath_ab: 0,
+                rot_arcane_wrath_ab_after: 0,
+                rot_am_ab: 0,
+                rot_am_ab_after: 0,
+                rot_filler: 0,
                 rot_winters_chill: false,
                 rot_fire_blast_hot_streak: false,
                 rot_brain_freeze_fireball: false,

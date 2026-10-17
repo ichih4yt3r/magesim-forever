@@ -49,6 +49,8 @@ void Player::reset()
     mana_ruby = 1;
     // mana_sapphire = 3;
     ab_streak = 0;
+    arcane_wrath_casts = 0;
+    arcane_missiles_casts = 0;
     ab_spell_power = 0;
     ab_sp_stacks = 0;
     ice_lance_empowered = false;
@@ -764,8 +766,10 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     // Cooldowns
     if (spell->id == spell::FIRE_BLAST)
         actions.push_back(cooldownAction<cooldown::FireBlast>(talents.imp_fire_blast));
-    if (spell->id == spell::ARCANE_WRATH)
+    if (spell->id == spell::ARCANE_WRATH) {
+        arcane_wrath_casts++;
         actions.push_back(cooldownAction<cooldown::ArcaneWrath>());
+    }
     if (spell->id == spell::ARCANE_BARRAGE)
         actions.push_back(cooldownAction<cooldown::ArcaneBarrage>());
     if (spell->id == spell::BLAST_WAVE)
@@ -839,6 +843,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     }
 
     if (spell->id == spell::ARCANE_MISSILES && hasBuff(buff::MISSILE_BARRAGE)) {
+        arcane_missiles_casts++;
         actions.push_back(buffExpireAction<buff::MissileBarrage>());
         if (config.t10_2set)
             pending_ptl = true;
@@ -2035,9 +2040,89 @@ bool Player::canBlast(const State& state) const
     return true;
 }
 
+int Player::arcaneWrathStackHold() const
+{
+    int stacks = arcane_wrath_casts > 0 ? config.rot_arcane_wrath_ab_after : config.rot_arcane_wrath_ab;
+    if (stacks < 0)
+        return 0;
+    return stacks;
+}
+
+int Player::arcaneMissileStackHold() const
+{
+    int stacks = arcane_missiles_casts > 0 ? config.rot_am_ab_after : config.rot_am_ab;
+    if (stacks < 0)
+        return 0;
+    return stacks;
+}
+
+bool Player::needsArcaneBlast(const State& state) const
+{
+    int stacks = buffStacks(buff::ARCANE_BLAST);
+    if (canReactTo(buff::MISSILE_BARRAGE, state.t) && stacks < arcaneMissileStackHold())
+        return true;
+    if (config.rot_arcane_wrath && stacks < arcaneWrathStackHold())
+        return true;
+    return false;
+}
+
+std::shared_ptr<spell::Spell> Player::fillerSpell(const State& state)
+{
+    if (!config.rot_filler || state.targets.empty())
+        return nullptr;
+
+    std::shared_ptr<spell::Spell> spell;
+    switch (config.rot_filler) {
+        case spell::FIREBALL:
+            spell = std::make_shared<spell::Fireball>();
+            break;
+        case spell::FROSTBOLT:
+            spell = std::make_shared<spell::Frostbolt>();
+            break;
+        case spell::FROSTFIRE_BOLT:
+            spell = std::make_shared<spell::FrostfireBolt>();
+            break;
+        case spell::SCORCH:
+            spell = std::make_shared<spell::Scorch>();
+            break;
+        case spell::PYROBLAST:
+            spell = std::make_shared<spell::Pyroblast>();
+            break;
+        case spell::FIRE_BLAST:
+            if (!canFireBlast())
+                return nullptr;
+            spell = std::make_shared<spell::FireBlast>();
+            break;
+        case spell::ARCANE_EXPLOSION:
+            spell = std::make_shared<spell::ArcaneExplosion>();
+            break;
+        case spell::ARCANE_BARRAGE:
+            if (!talents.arcane_barrage || hasCooldown(cooldown::ARCANE_BARRAGE))
+                return nullptr;
+            spell = std::make_shared<spell::ArcaneBarrage>();
+            break;
+        case spell::ICE_LANCE:
+            if (!talents.ice_lance)
+                return nullptr;
+            spell = std::make_shared<spell::IceLance>();
+            break;
+        default:
+            return nullptr;
+    }
+
+    if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND) && castTime(spell) > 0)
+        return nullptr;
+    if (castTime(spell) > state.duration - state.t)
+        return nullptr;
+    return spell;
+}
+
 bool Player::shouldUseMissileBarrage(const State& state)
 {
     if (!canReactTo(buff::MISSILE_BARRAGE, state.t))
+        return false;
+
+    if (buffStacks(buff::ARCANE_BLAST) < arcaneMissileStackHold())
         return false;
 
     // Arcane Missiles is a channel. Presence of Mind does not apply.
@@ -2293,7 +2378,8 @@ action::Action Player::nextAction(const State& state)
         bool has_mb = canReactTo(buff::MISSILE_BARRAGE, state.t);
         auto ab = std::make_shared<spell::ArcaneBlast>();
 
-        if (config.rot_arcane_wrath && !hasCooldown(cooldown::ARCANE_WRATH)) {
+        if (config.rot_arcane_wrath && !hasCooldown(cooldown::ARCANE_WRATH) &&
+            buffStacks(buff::ARCANE_BLAST) >= arcaneWrathStackHold()) {
             auto wrath = std::make_shared<spell::ArcaneWrath>();
             double ct = castTime(wrath);
             if ((ct == 0 || !state.isMoving()) && ct <= state.duration - state.t)
@@ -2301,6 +2387,8 @@ action::Action Player::nextAction(const State& state)
         }
 
         if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND)) {
+            if (auto filler = fillerSpell(state))
+                return spellAction(filler, target);
             if (config.targets > 2 && config.distance <= 10) {
                 return spellAction<spell::ArcaneExplosion>();
             }
@@ -2333,15 +2421,17 @@ action::Action Player::nextAction(const State& state)
         else if (!has_mb && config.rot_ab_no_mb_mana < manaPercent())
             return spellAction(ab, target);
         // AM / Abarr if we have AB stacks
-        else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks) {
-            // Arcane Barrage if we don't have Missile Barrage proc
-            if (!has_mb && config.rotation == ROTATION_ST_AB_AM_BARRAGE)
-                return spellAction<spell::ArcaneBarrage>(target);
-            else
-                return spellAction<spell::ArcaneMissiles>(target);
-        }
-        else
+        else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks && !has_mb && config.rotation == ROTATION_ST_AB_AM_BARRAGE)
+            return spellAction<spell::ArcaneBarrage>(target);
+        else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks && (has_mb || arcaneMissileStackHold() == 0))
+            return spellAction<spell::ArcaneMissiles>(target);
+        else {
+            if (!needsArcaneBlast(state)) {
+                if (auto filler = fillerSpell(state))
+                    return spellAction(filler, target);
+            }
             return spellAction(ab, target);
+        }
     }
 
     // Frost

@@ -15,6 +15,10 @@ private:
     const Timing* getNextTiming(const std::string& name) const;
     void useTiming(const Timing* timing);
     double hotStreakRemaining(double t) const;
+    int arcaneWrathStackHold() const;
+    int arcaneMissileStackHold() const;
+    bool needsArcaneBlast(const State& state) const;
+    std::shared_ptr<spell::Spell> fillerSpell(const State& state);
 
 public:
     const Talents talents;
@@ -44,6 +48,8 @@ public:
     int mana_citrine;
     int mana_sapphire;
     int ab_streak;
+    int arcane_wrath_casts = 0;
+    int arcane_missiles_casts = 0;
     double ab_spell_power;
     int ab_sp_stacks;
     bool ice_lance_empowered;

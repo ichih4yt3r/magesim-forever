@@ -1143,8 +1143,8 @@ void Simulation::onBuffGain(std::shared_ptr<unit::Unit> unit, std::shared_ptr<bu
     if (stacks != old_stacks || buff->show_refresh)
         logBuffGain(unit, buff, stacks);
 
-    if (buff->id == buff::MISSILE_BARRAGE && old_stacks < 1 && unit->id == player->id)
-        pushMbCancel(unit, config.reaction_time / 1000.0);
+    /*if (buff->id == buff::MISSILE_BARRAGE && old_stacks < 1 && unit->id == player->id)
+        pushMbCancel(unit, config.reaction_time / 1000.0);*/
 
     auto actions = unit->onBuffGain(state, buff);
     processActions(unit, actions);

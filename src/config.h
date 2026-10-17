@@ -93,6 +93,11 @@ struct Config
     bool rot_mb_cancel = false;
     bool rot_ice_lance = false;
     bool rot_arcane_wrath = false;
+    int rot_arcane_wrath_ab = 0;
+    int rot_arcane_wrath_ab_after = 0;
+    int rot_am_ab = 0;
+    int rot_am_ab_after = 0;
+    int rot_filler = 0;
     bool rot_winters_chill = false;
     bool rot_fire_blast_hot_streak = false;
     bool rot_brain_freeze_fireball = false;
