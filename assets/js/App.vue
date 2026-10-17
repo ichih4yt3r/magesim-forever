@@ -216,7 +216,9 @@
                     <template v-if="result.iterations">
                         <div class="dps-result">
                             <div>DPS</div>
-                            <div class="faded">{{ round(result.min_dps, 2) }} - {{ round(result.max_dps, 2) }}</div>
+                            <div class="faded"> Total Range: {{ round(result.min_dps, 2) }} - {{ round(result.max_dps, 2) }}</div>
+                            <div class="faded"> Majority Range: {{ roundFixed(result.min_dps + (result.max_dps - result.min_dps) * 0.25, 0) }} - {{ roundFixed(result.min_dps + (result.max_dps - result.min_dps) * 0.75, 0) }}</div>
+                            <div class="faded">Min/Max Spread: {{ roundFixed(result.max_dps - result.min_dps, 0) }}</div>
                             <div class="dps">{{ round(result.avg_dps, 2) }}</div>
                             <div class="mb-1" v-if="result.t_gcd_capped >= 0.01 || result.n_oom">
                                 <div class="faded" v-if="result.t_gcd_capped >= 0.01">
