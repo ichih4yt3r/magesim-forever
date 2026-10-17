@@ -964,12 +964,12 @@
                                         <option :value="rotations.ROTATION_ST_FIRE">Fire</option>
                                         <option :value="rotations.ROTATION_ST_FIRE_SC">Fire (Scorch)</option>
                                         <option :value="rotations.ROTATION_ST_FROST">Frost</option>
-                                        <option :value="rotations.ROTATION_AOE_AE">Arcane Explosion</option>
+                                        <!-- <option :value="rotations.ROTATION_AOE_AE">Arcane Explosion</option>
                                         <option :value="rotations.ROTATION_AOE_AE_FS">Flamestrike > Arcane Explosion</option>
                                         <option :value="rotations.ROTATION_AOE_BLIZZ">Blizzard</option>
                                         <option :value="rotations.ROTATION_AOE_BLIZZ_FS">Flamestrike > Blizzard</option>
                                         <option :value="rotations.ROTATION_AOE_FIRE">Fire AoE</option>
-                                        <option :value="rotations.ROTATION_AOE_FS">Flamestrike</option>
+                                        <option :value="rotations.ROTATION_AOE_FS">Flamestrike</option> -->
                                     </select>
                                 </div>
                                 <div class="form-item" v-if="config.talents.imp_scorch">
@@ -4843,10 +4843,10 @@
                 var arr = build.split("_");
                 var has_glyphs = arr.length > 1;
                 var t = arr[0];
-                // Wowhead Forever prefixes the string with the two characters "v1".
-                // Only those two: the following digits are Arcane ranks. A broader
-                // \d+ match would delete the whole Arcane tree.
-                t = t.replace(/^v1/, "");
+                // Wowhead Forever prefixes the string with "v" and one version digit.
+                // Only that digit: the following characters are talent ranks. A
+                // longer digit match would delete the Arcane tree.
+                t = t.replace(/^v\d/, "");
                 var ch, value;
                 var tree = 0, talent = 0;
 

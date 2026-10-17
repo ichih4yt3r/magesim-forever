@@ -839,12 +839,9 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     }
 
     if (spell->id == spell::ARCANE_MISSILES && hasBuff(buff::MISSILE_BARRAGE)) {
-        // 20% chance - Sorta confirmed from elitist jerks
-        if (!config.t8_4set || random<int>(0, 4) != 0) {
-            actions.push_back(buffExpireAction<buff::MissileBarrage>());
-            if (config.t10_2set)
-                pending_ptl = true;
-        }
+        actions.push_back(buffExpireAction<buff::MissileBarrage>());
+        if (config.t10_2set)
+            pending_ptl = true;
     }
     if (spell->id == spell::ICE_LANCE)
         ice_lance_empowered = isFrozen();
@@ -1306,11 +1303,11 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
     if (instance.spell->id == spell::ICE_LANCE)
         ice_lance_empowered = false;
 
-    if (instance.result != spell::MISS && talents.missile_barrage && instance.spell->id == spell::ARCANE_MISSILES) {
+    /* if (instance.result != spell::MISS && talents.missile_barrage && instance.spell->id == spell::ARCANE_MISSILES) {
         int chance = talents.missile_barrage * 20;
         if (random<int>(0, 99) < chance)
             actions.push_back(buffAction<buff::MissileBarrage>());
-    }
+    } */
 
     if (talents.fingers_of_frost) {
         if (hasChillEffect(instance.spell)) {
