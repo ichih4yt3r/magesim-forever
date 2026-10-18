@@ -667,7 +667,7 @@
                                     <tr v-for="log in activeLog" :class="['type-'+log.type]">
                                         <td>{{ formatTime(log.t) }}</td>
                                         <td>{{ round(log.mana) }} ({{ round(log.mana_percent) }}%)</td>
-                                        <td>{{ (log.t ? round(log.dmg/log.t) : "0") }}</td>
+                                        <td>{{ ((log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0)) ? round(log.dmg / (log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0))) : "0") }}</td>
                                         <td>{{ log.text }}</td>
                                     </tr>
                                 </tbody>

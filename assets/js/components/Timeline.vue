@@ -176,10 +176,12 @@
                 }
                 mana.push({ x: this.result.t, y: lastPlayer ? lastPlayer.mana_percent : 0 });
 
+                var offset = log.length && log[0].t < 0 ? log[0].t * -1 : 0;
                 var dps = [{ x: 0, y: 0 }];
                 for (var i = 0; i < log.length; i++) {
-                    if (log[i].type == 3 && log[i].t)
-                        dps.push({ x: log[i].t, y: log[i].dmg / log[i].t });
+                    var elapsed = log[i].t + offset;
+                    if (log[i].type == 3 && elapsed)
+                        dps.push({ x: log[i].t, y: log[i].dmg / elapsed });
                 }
                 dps.push({ x: this.result.t, y: this.result.dps });
 
