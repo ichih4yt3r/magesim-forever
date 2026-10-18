@@ -46,6 +46,7 @@ namespace spell
         EXTRACT_NECROMANTIC_POWER = 60488,
         PILLAR_OF_FLAME_HC = 67760,
         PILLAR_OF_FLAME_NM = 67714,
+        TOUCH_OF_THE_GRAVE = 100003,
 
         MIRROR_IMAGE = 55342,
         MIRROR_FIRE_BLAST = 59637,
@@ -239,8 +240,8 @@ namespace spell
         Fireball() : Spell(FIREBALL, "Fireball", SCHOOL_FIRE)
         {
             cost = 19;
-            min_dmg = 596;
-            max_dmg = 760;
+            min_dmg = 409;
+            max_dmg = 517;
             cast_time = 3.5;
             coeff = 1;
             speed = 24;
@@ -257,8 +258,8 @@ namespace spell
             coeff = 0;
             t_interval = 2;
             ticks = 4;
-            min_dmg = 19;
-            max_dmg = 19;
+            min_dmg = 14;
+            max_dmg = 14;
         }
     };
 
@@ -295,8 +296,8 @@ namespace spell
         Scorch() : Spell(SCORCH, "Scorch", SCHOOL_FIRE)
         {
             cost = 8;
-            min_dmg = 237;
-            max_dmg = 280;
+            min_dmg = 170;
+            max_dmg = 200;
             cast_time = 1.5;
             coeff = 1.5/3.5;
         }
@@ -756,6 +757,20 @@ namespace spell
             cast_time = 0;
             coeff = 0;
             gcd = 1.9;
+        }
+    };
+
+    struct TouchOfTheGrave : Spell
+    {
+        TouchOfTheGrave(double dmg) : Spell(TOUCH_OF_THE_GRAVE, "Touch of the Grave", SCHOOL_SHADOW)
+        {
+            proc = true;
+            min_dmg = dmg;
+            max_dmg = dmg;
+            coeff = 0;
+            gcd = 0;
+            active_use = false;
+            can_proc = false;
         }
     };
 }

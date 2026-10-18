@@ -19,6 +19,7 @@ private:
     int arcaneMissileStackHold() const;
     bool needsArcaneBlast(const State& state) const;
     std::shared_ptr<spell::Spell> fillerSpell(const State& state);
+    bool shouldMaintainImpScorch(const State& state, std::shared_ptr<target::Target> target) const;
 
 public:
     const Talents talents;

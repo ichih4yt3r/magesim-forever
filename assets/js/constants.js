@@ -9,6 +9,12 @@ export default {
         RACE_SKYBORNE: 6,
         RACE_ORC: 7,
     },
+    creatures: {
+        CREATURE_NONE: 0,
+        CREATURE_UNDEAD: 1,
+        CREATURE_BEAST: 2,
+        CREATURE_ELEMENTAL: 3,
+    },
     rotations: {
         ROTATION_ST_FROSTFIRE: 0,
         ROTATION_ST_AB_AM: 10,

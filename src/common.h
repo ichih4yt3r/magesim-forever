@@ -40,6 +40,14 @@ enum Faction : int
     FACTION_ALLIANCE,
 };
 
+enum CreatureType : int
+{
+    CREATURE_NONE = 0,
+    CREATURE_UNDEAD = 1,
+    CREATURE_BEAST = 2,
+    CREATURE_ELEMENTAL = 3,
+};
+
 enum School : int
 {
     SCHOOL_NONE,

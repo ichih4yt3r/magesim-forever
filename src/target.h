@@ -23,6 +23,7 @@ public:
     double t_fireball = -20;
     double t_pyro_dot = -20;
     double t_winters_chill = -20;
+    double t_imp_scorch = -20;
     double t_living_bomb;
     double t_pyroblast;
 

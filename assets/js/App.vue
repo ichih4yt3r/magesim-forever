@@ -105,6 +105,8 @@
                                     <tooltip position="r">
                                         <div class="tal">
                                             <div>{{ roundFixed(display_stats.intellect / 59.5, 2) }}% from intellect</div>
+                                            <div v-if="config.race == races.RACE_ORC">1% from Savage</div>
+                                            <div v-if="config.race == races.RACE_HUMAN">2% from Ruthless</div>
                                             <div v-if="config.talents.arcane_instability">{{ config.talents.arcane_instability }}% from Arcane Instability</div>
                                             <div v-if="config.talents.pyromaniac">{{ config.talents.pyromaniac }}% from Pyromaniac</div>
                                             <div v-if="config.focus_magic">3% from Focus Magic</div>
@@ -146,6 +148,9 @@
                                 </td>
                                 <td>
                                     <span>{{ round(display_stats.haste, 2) }}%</span>
+                                    <tooltip position="r" v-if="config.race == races.RACE_SKYBORNE">
+                                        <div class="tal">3% from Skyborne</div>
+                                    </tooltip>
                                 </td>
                             </tr>
                         </tbody>
@@ -794,7 +799,7 @@
                                 </div>
                                 <div class="form-item">
                                     <label>Race</label>
-                                    <select v-model="config.race">
+                                    <select v-model="config.race" @change="calcStats">
                                         <option :value="races.RACE_BLOOD_ELF">Blood elf</option>
                                         <option :value="races.RACE_DRAENEI">Draenei</option>
                                         <option :value="races.RACE_GNOME">Gnome</option>
@@ -804,6 +809,13 @@
                                         <option :value="races.RACE_SKYBORNE">Skyborne</option>
                                         <option :value="races.RACE_ORC">Orc</option>
                                     </select>
+                                </div>
+                                <div class="form-item" v-if="config.race == races.RACE_UNDEAD">
+                                    <label>
+                                        <span>Max health</span>
+                                        <help>Touch of the Grave caps at 5% of your health. Stamina is not calculated yet, so enter your max health here.</help>
+                                    </label>
+                                    <input type="text" v-model.number="config.player_health">
                                 </div>
                                 <div class="form-item">
                                     <label>Talents (<a :href="config.build" target="_blank">link</a>)</label>
@@ -824,9 +836,13 @@
                                     </div>
                                 </div>
                                 <div class="form-item">
-                                    <label><input type="checkbox" :checked="config.target_undead" @change="config.target_undead = $event.target.checked; calcStats()">
-                                        <span>Undead target</span>
-                                    </label>
+                                    <label>Target type</label>
+                                    <select v-model.number="config.target_creature" @change="onTargetType">
+                                        <option :value="creatures.CREATURE_NONE">Normal</option>
+                                        <option :value="creatures.CREATURE_UNDEAD">Undead</option>
+                                        <option :value="creatures.CREATURE_BEAST">Beast</option>
+                                        <option :value="creatures.CREATURE_ELEMENTAL">Elemental</option>
+                                    </select>
                                 </div>
                                 <div class="form-item form-row">
                                     <div class="form-item">
@@ -2116,6 +2132,8 @@
                 target_resistance: 0,
                 target_level: 63,
                 target_undead: false,
+                target_creature: 0,
+                player_health: 3000,
                 target_hp: 100,
                 distance: 20,
                 reaction_time: 300,
@@ -4081,7 +4099,7 @@
                 }
 
                 if (this.config.weapon_oil == this.oils.OIL_BLESSED_WIZARD) {
-                    if (this.config.target_undead)
+                    if (this.config.target_creature == this.creatures.CREATURE_UNDEAD || this.config.target_undead)
                         stats.spell_power+= 60;
                 }
                 else if (this.config.weapon_oil == this.oils.OIL_BRILLIANT_WIZARD) {
@@ -4211,8 +4229,14 @@
                     stats.intellect*= 1.0 + this.config.talents.arcane_mind*0.03;
                 // Expansive mind is 5% more mana only, not int. if (this.config.race == this.races.RACE_GNOME)
                    // stats.intellect*= 1.05;
-                if (this.config.race == this.races.RACE_HUMAN)
+                if (this.config.race == this.races.RACE_HUMAN) {
                     stats.spirit*= 1.05;
+                    stats.crit+= 2;
+                }
+                if (this.config.race == this.races.RACE_ORC)
+                    stats.crit+= 1;
+                if (this.config.race == this.races.RACE_SKYBORNE)
+                    stats.haste = this.multiplyHaste(stats.haste, 3);
                 if (this.config.blessing_of_kings) {
                     stats.intellect*= 1.1;
                     stats.spirit*= 1.1;
@@ -4296,6 +4320,11 @@
             calcStats() {
                 this.simStats();
                 this.displayStats();
+            },
+
+            onTargetType() {
+                this.config.target_undead = this.config.target_creature == this.creatures.CREATURE_UNDEAD;
+                this.calcStats();
             },
 
             openItem(item) {
@@ -6015,6 +6044,9 @@
                         config.target_level -= 20;
                     if (config.target_level < 60 || config.target_level > 63)
                         config.target_level = 63;
+                    if (config.target_undead && config.target_creature == this.creatures.CREATURE_NONE)
+                        config.target_creature = this.creatures.CREATURE_UNDEAD;
+                    config.target_undead = config.target_creature == this.creatures.CREATURE_UNDEAD;
                     _.merge(this.config, config);
                     this.onLoadConfig(profile.config);
                     this.profile_status.config = true;

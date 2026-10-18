@@ -1179,6 +1179,8 @@ void Simulation::onDebuffGain(std::shared_ptr<target::Target> target, std::share
     int stacks = target->addDebuff(debuff);
     if (debuff->id == debuff::WINTERS_CHILL)
         target->t_winters_chill = state.t + debuff->duration;
+    if (debuff->id == debuff::IMPROVED_SCORCH)
+        target->t_imp_scorch = state.t + debuff->duration;
     removeDebuffExpiration(target, debuff);
     pushDebuffExpire(target, debuff);
 
@@ -1343,9 +1345,6 @@ double Simulation::critChance(std::shared_ptr<unit::Unit> unit, std::shared_ptr<
     if (!unit->get_raid_debuffs)
         return crit;
 
-    if (config.debuff_spell_crit || target->hasDebuff(debuff::IMPROVED_SCORCH))
-        crit_debuff += 5.0;
-
     if (config.debuff_crit)
         crit_debuff += 3.0;
 
@@ -1406,6 +1405,13 @@ double Simulation::debuffDmgMultiplier(std::shared_ptr<unit::Unit> unit, std::sh
     if (target->hasDebuff(debuff::ICEHOWL_STAGGERED_DAZE))
         multi *= 2;
 
+    // Improved Scorch: 3% fire damage per stack, up to 5. Separate from Fire Power.
+    if (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE) {
+        int scorch_stacks = target->debuffStacks(debuff::IMPROVED_SCORCH);
+        if (scorch_stacks > 0)
+            multi *= 1.0 + 0.03 * scorch_stacks;
+    }
+
     return multi;
 }
 
@@ -1418,8 +1424,16 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
     else
         dmg = random<double>(spell->min_dmg, spell->max_dmg);
 
+    double racial = 1;
+    if (unit->id == player->id) {
+        if (player->race == RACE_TROLL && config.target_creature == CREATURE_BEAST)
+            racial = 1.05;
+        else if (player->race == RACE_SKYBORNE && config.target_creature == CREATURE_ELEMENTAL)
+            racial = 1.05;
+    }
+
     if (spell->fixed_dmg)
-        return dmg;
+        return dmg * racial;
 
     if (spell->coeff) {
         double sp = unit->getSpellPower(spell->school);
@@ -1451,7 +1465,7 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
     if (unit->id == player->id)
         dmg *= player->firePowerMultiplier(spell, target, state.t);
 
-    return dmg;
+    return dmg * racial;
 }
 
 double Simulation::spellDmgResist(std::shared_ptr<unit::Unit> unit, const spell::SpellInstance &instance)

@@ -244,15 +244,6 @@ double Player::critChance(std::shared_ptr<spell::Spell> spell) const
         }
     }
 
-    if (talents.imp_scorch) {
-        if (spell->id == spell::SCORCH ||
-            spell->id == spell::FIREBALL ||
-            spell->id == spell::FROSTFIRE_BOLT)
-        {
-            crit += talents.imp_scorch * 1.0;
-        }
-    }
-
     if (talents.critical_mass && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE))
         crit += talents.critical_mass * 2.0;
 
@@ -393,7 +384,7 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
     if (spell->proc)
         return multi;
 
-    if (hasBuff(buff::EUREKA, true))
+    if (hasBuff(buff::EUREKA))
         multi *= 1.1;
 
     if (talents.torment_of_the_weak) {
@@ -567,8 +558,9 @@ double Player::getSpellPower(School school) const
 
     sp += ab_spell_power;
 
+    // Gear and consumes only. Proc, raid, and Arcane Blast spell power stay out.
     if (hasBuff(buff::BLOOD_FURY))
-        sp *= 1.1;
+        sp += stats.spell_power * 0.1;
 
     return sp;
 }
@@ -755,13 +747,6 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         return actions;
 
     bool is_harmful = spell->max_dmg > 0;
-
-    if (hasBuff(buff::EUREKA) && spell->active_use && is_harmful) {
-        if (buffStacks(buff::EUREKA) <= 1)
-            actions.push_back(buffExpireAction<buff::Eureka>());
-        else
-            actions.push_back(buffAction<buff::Eureka>());
-    }
 
     // Cooldowns
     if (spell->id == spell::FIRE_BLAST)
@@ -1106,8 +1091,25 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
     }
 
     if (instance.result != spell::MISS) {
-        if (talents.imp_scorch && instance.spell->id == spell::SCORCH)
-            actions.push_back(debuffAction<debuff::ImprovedScorch>(target));
+        if (race == RACE_UNDEAD && !hasCooldown(cooldown::TOUCH_OF_THE_GRAVE) && instance.spell->can_proc && instance.spell->coeff > 0 && random<int>(0, 99) < 10) {
+            double coeff = instance.spell->coeff + spellCoeffMod(instance.spell);
+            if (instance.spell->channeling && instance.spell->ticks)
+                coeff /= instance.spell->ticks;
+            double drain = getSpellPower(instance.spell->school) * coeff;
+            if (config.player_health > 0)
+                drain = std::min(drain, config.player_health * 0.05);
+            if (drain > 0) {
+                auto action = spellAction<spell::TouchOfTheGrave>(target, drain);
+                action.cooldown = std::make_shared<cooldown::TouchOfTheGrave>();
+                actions.push_back(std::move(action));
+            }
+        }
+
+        if (talents.imp_scorch && instance.spell->id == spell::SCORCH) {
+            int chance = talents.imp_scorch >= 3 ? 100 : talents.imp_scorch * 33;
+            if (chance >= 100 || random<int>(0, 99) < chance)
+                actions.push_back(debuffAction<debuff::ImprovedScorch>(target));
+        }
 
         if (instance.spell->id == spell::IGNITE && talents.empowered_fire) {
             double chance = talents.empowered_fire * 33;
@@ -2148,7 +2150,7 @@ bool Player::shouldPreCast() const
 std::shared_ptr<spell::Spell> Player::preCastSpell()
 {
     if (config.rotation == ROTATION_ST_FIRE)
-        return std::make_shared<spell::Fireball>();
+        return std::make_shared<spell::Fireball>(); // select pyro, scorch, or fireball
     if (config.rotation == ROTATION_ST_FROSTFIRE)
         return std::make_shared<spell::FrostfireBolt>();
     if (config.rotation == ROTATION_ST_AB_AM || config.rotation == ROTATION_ST_AB_AM_BARRAGE)
@@ -2156,7 +2158,7 @@ std::shared_ptr<spell::Spell> Player::preCastSpell()
     if (config.rotation == ROTATION_ST_FROST)
         return std::make_shared<spell::Frostbolt>();
     if (config.rotation == ROTATION_ST_FIRE_SC)
-        return std::make_shared<spell::Scorch>();
+        return std::make_shared<spell::Scorch>(); // remove, personal scorch
 
     return std::make_shared<spell::Fireball>();
 }
@@ -2235,6 +2237,37 @@ double Player::hotStreakRemaining(double t) const
     return hs->second->duration - (t - hs->second->t_refreshed);
 }
 
+bool Player::shouldMaintainImpScorch(const State& state, std::shared_ptr<target::Target> target) const
+{
+    if (!config.maintain_imp_scorch || !talents.imp_scorch || !target)
+        return false;
+
+    int stacks = target->debuffStacks(debuff::IMPROVED_SCORCH);
+    double expire = stacks > 0 ? target->t_imp_scorch : state.t;
+
+    // No travel time: the impact is still queued, so count this Scorch before it lands.
+    if (t_scorch == state.t && talents.imp_scorch >= 3) {
+        if (stacks < 5)
+            stacks++;
+        expire = state.t + debuff::ImprovedScorch().duration;
+    }
+
+    if (stacks < 5)
+        return true;
+
+    auto scorch = std::make_shared<spell::Scorch>();
+    double remain = expire - state.t;
+    // 30s debuff, applied when the 1.5s cast finishes. Include the filler so it cannot run out the window.
+    double window = castTime(scorch);
+
+    if (config.rotation == ROTATION_ST_FIRE)
+        window += castTime(std::make_shared<spell::Fireball>());
+    else if (config.rotation == ROTATION_ST_FROSTFIRE)
+        window += castTime(std::make_shared<spell::FrostfireBolt>());
+
+    return remain <= window;
+}
+
 action::Action Player::nextAction(const State& state)
 {
     if (!state.inCombat())
@@ -2279,9 +2312,8 @@ action::Action Player::nextAction(const State& state)
     // Default target
     auto target = state.targets[0];
 
-    if (config.maintain_imp_scorch && talents.imp_scorch && t_scorch + 27.0 <= state.t) {
+    if (shouldMaintainImpScorch(state, target))
         return spellAction<spell::Scorch>(target);
-    }
 
     // Fire rotations
     if (config.rotation == ROTATION_ST_FIRE || config.rotation == ROTATION_ST_FROSTFIRE || config.rotation == ROTATION_ST_FIRE_SC) {
@@ -2298,8 +2330,17 @@ action::Action Player::nextAction(const State& state)
         double hs_remain = hotStreakRemaining(state.t);
         double pyro_cast = castTime(pyroblast);
         bool stacks_ready = hot_streak && pyro_will_land && hotstreak_stacks >= pyro_at;
+        
         // Start below the stack goal only when this Pyroblast would not finish before Hot Streak falls off.
         bool pyro_would_miss_buff = hot_streak && pyro_will_land && hotstreak_stacks < pyro_at && hs_remain <= pyro_cast;
+
+        // A long Pyroblast can run out the 30s debuff. Refresh first when this cast would.
+        if (config.maintain_imp_scorch && talents.imp_scorch && (pyro_would_miss_buff || stacks_ready)) {
+            int scorch_stacks = target->debuffStacks(debuff::IMPROVED_SCORCH);
+            double scorch_remain = scorch_stacks > 0 ? target->t_imp_scorch - state.t : 0;
+            if (scorch_stacks >= 5 && scorch_remain <= pyro_cast + castTime(std::make_shared<spell::Scorch>()))
+                return spellAction<spell::Scorch>(target);
+        }
 
         if (pyro_would_miss_buff || (stacks_ready && multi_target)) {
             if (multi_target && !config.only_main_dmg) {

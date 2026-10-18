@@ -16,6 +16,8 @@ struct Config
     int dot_targets = 1;
     int target_resistance = 0;
     int target_level = 63;
+    int target_creature = CREATURE_NONE;
+    double player_health = 3000;
     double target_hp = 100;
     int distance = 20;
     int reaction_time = 300;

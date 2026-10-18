@@ -23,6 +23,7 @@ namespace cooldown
         READ_LEY_LINE = 100001,
         EUREKA = 100002,
         ARCANE_TORRENT = 28730,
+        TOUCH_OF_THE_GRAVE = 100003,
         ICY_VEINS = 12472,
         FIRE_BLAST = 42873,
         BLAST_WAVE = 42945,
@@ -333,6 +334,18 @@ namespace cooldown
         {
             id = ARCANE_TORRENT;
             duration = 120;
+        }
+
+    };
+
+    class TouchOfTheGrave : public Cooldown
+    {
+
+    public:
+        TouchOfTheGrave()
+        {
+            id = TOUCH_OF_THE_GRAVE;
+            duration = 25;
         }
 
     };

@@ -155,11 +155,7 @@ Eureka::Eureka()
 {
     id = EUREKA;
     name = "Eureka";
-    duration = 1000;
-    max_stacks = 3;
-    stack_increment = -1;
-    stack_refresh = false;
-    snapshot = true;
+    duration = 8;
 }
 
 MissileBarrage::MissileBarrage()

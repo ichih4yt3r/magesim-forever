@@ -297,7 +297,7 @@ double Unit::castHaste() const
     if (hasBuff(buff::ICY_VEINS))
         haste *= 1.2;
     if (hasBuff(buff::BERSERKING))
-        haste *= 1.2;
+        haste *= 1.1;
 
     if (get_raid_buffs) {
         if (config.buff_haste)
