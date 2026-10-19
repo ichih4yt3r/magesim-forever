@@ -265,6 +265,8 @@ EMSCRIPTEN_BINDINGS(my_module)
         .property("pre_incanters_absorption", &Config::pre_incanters_absorption)
         .property("pre_mana_incanters_absorption", &Config::pre_mana_incanters_absorption)
         .property("pre_cast", &Config::pre_cast)
+        .property("pre_cast_spell", &Config::pre_cast_spell)
+        .property("pre_presence_of_mind", &Config::pre_presence_of_mind)
 
         .property("potion", &Config::potion)
         .property("pre_potion", &Config::pre_potion)

@@ -18,6 +18,7 @@ private:
     int arcaneWrathStackHold() const;
     int arcaneMissileStackHold() const;
     bool needsArcaneBlast(const State& state) const;
+    std::shared_ptr<spell::Spell> spellFromId(int id) const;
     std::shared_ptr<spell::Spell> fillerSpell(const State& state);
     bool shouldMaintainImpScorch(const State& state, std::shared_ptr<target::Target> target) const;
 
@@ -57,6 +58,7 @@ public:
     bool used_dark_rune;
     bool black_magic;
     bool has_pre_cast;
+    bool has_pre_pom = false;
     bool pending_ptl;
 
     Player(const Config& config, const Stats& stats, const Talents& talents, const Glyphs& glyphs);

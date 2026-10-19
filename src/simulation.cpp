@@ -161,7 +161,17 @@ SimulationResult Simulation::run(bool single)
 
     workCurrent();
 
-    if (!state.isSilenced() && !player->shouldPreCast())
+    bool precast_blocking = player->is_channeling;
+    if (!precast_blocking) {
+        for (const auto& event : queue) {
+            if (event.type == EVENT_CAST_FINISH && event.unit && event.unit->id == player->id) {
+                precast_blocking = true;
+                break;
+            }
+        }
+    }
+
+    if (!state.isSilenced() && !precast_blocking)
         nextAction(player);
 
     work();
@@ -207,7 +217,9 @@ void Simulation::runPrecombat()
             break;
     }
 
-    state.t = player->t_gcd = 0;
+    state.t = 0;
+    if (player->t_gcd < 0)
+        player->t_gcd = 0;
 }
 
 void Simulation::workCurrent()
@@ -747,12 +759,10 @@ void Simulation::onCastSuccess(std::shared_ptr<unit::Unit> unit, std::shared_ptr
     }
 
     if (spell->active_use) {
-        if (state.inCombat()) {
-            if (spell->channeling && spell->actual_cast_time > 0)
-                pushWait(unit, spell->actual_cast_time);
-            else
-                nextAction(unit);
-        }
+        if (spell->channeling && spell->actual_cast_time > 0)
+            pushWait(unit, spell->actual_cast_time);
+        else if (state.inCombat())
+            nextAction(unit);
     }
 }
 

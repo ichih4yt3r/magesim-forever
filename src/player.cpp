@@ -57,6 +57,7 @@ void Player::reset()
     used_dark_rune = false;
     black_magic = false;
     has_pre_cast = false;
+    has_pre_pom = false;
     pending_ptl = false;
     crit_suppression = true;
 
@@ -2142,23 +2143,64 @@ bool Player::shouldUseMissileBarrage(const State& state)
     return true;
 }
 
+std::shared_ptr<spell::Spell> Player::spellFromId(int id) const
+{
+    switch (static_cast<spell::ID>(id)) {
+        case spell::ARCANE_WRATH:
+            if (!talents.arcane_wrath)
+                return nullptr;
+            return std::make_shared<spell::ArcaneWrath>();
+        case spell::ARCANE_BLAST:
+            if (!talents.arcane_blast)
+                return nullptr;
+            return std::make_shared<spell::ArcaneBlast>();
+        case spell::ARCANE_MISSILES:
+            return std::make_shared<spell::ArcaneMissiles>();
+        case spell::PYROBLAST:
+            if (!talents.pyroblast)
+                return nullptr;
+            return std::make_shared<spell::Pyroblast>();
+        case spell::FIREBALL:
+            return std::make_shared<spell::Fireball>();
+        case spell::SCORCH:
+            return std::make_shared<spell::Scorch>();
+        case spell::FIRE_BLAST:
+            return std::make_shared<spell::FireBlast>();
+        case spell::FROSTBOLT:
+            return std::make_shared<spell::Frostbolt>();
+        case spell::FROST_BLAST:
+            return std::make_shared<spell::FrostBlast>();
+        case spell::FROSTFIRE_BOLT:
+            return std::make_shared<spell::FrostfireBolt>();
+        case spell::CONE_OF_COLD:
+            return std::make_shared<spell::ConeOfCold>();
+        default:
+            return nullptr;
+    }
+}
+
 bool Player::shouldPreCast() const
 {
+    if (config.pre_cast_spell != 0)
+        return spellFromId(config.pre_cast_spell) != nullptr;
     return config.pre_cast && config.rotation < ROTATION_AOE_AE;
 }
 
 std::shared_ptr<spell::Spell> Player::preCastSpell()
 {
+    if (auto chosen = spellFromId(config.pre_cast_spell))
+        return chosen;
+
     if (config.rotation == ROTATION_ST_FIRE)
-        return std::make_shared<spell::Fireball>(); // select pyro, scorch, or fireball
+        return std::make_shared<spell::Fireball>();
     if (config.rotation == ROTATION_ST_FROSTFIRE)
         return std::make_shared<spell::FrostfireBolt>();
-    if (config.rotation == ROTATION_ST_AB_AM || config.rotation == ROTATION_ST_AB_AM_BARRAGE)
+    if ((config.rotation == ROTATION_ST_AB_AM || config.rotation == ROTATION_ST_AB_AM_BARRAGE) && talents.arcane_blast)
         return std::make_shared<spell::ArcaneBlast>();
     if (config.rotation == ROTATION_ST_FROST)
         return std::make_shared<spell::Frostbolt>();
     if (config.rotation == ROTATION_ST_FIRE_SC)
-        return std::make_shared<spell::Scorch>(); // remove, personal scorch
+        return std::make_shared<spell::Scorch>();
 
     return std::make_shared<spell::Fireball>();
 }
@@ -2182,17 +2224,25 @@ double Player::preCombatDuration(const State& state)
 
     if (shouldPreCast()) {
         auto spell = preCastSpell();
+        bool pom = config.pre_presence_of_mind && talents.presence_of_mind && spell->cast_time > 0 && !spell->channeling;
+        double ct = 0;
 
-        if (config.pre_potion == POTION_SPEED)  {
-            buff_stats.haste_rating+= 500;
-            t += castTime(spell);
-            buff_stats.haste_rating-= 500;
-        }
-        else {
-            t += castTime(spell);
+        if (!pom) {
+            if (config.pre_potion == POTION_SPEED) {
+                buff_stats.haste_rating += 500;
+                ct = castTime(spell);
+                buff_stats.haste_rating -= 500;
+            }
+            else {
+                ct = castTime(spell);
+            }
         }
 
-        t -= 0.1; // Assume we don't have perfect timing
+        // Instants, including a Presence of Mind cast, finish just before pull.
+        if (ct > 0.1)
+            t += ct - 0.1;
+        else
+            t += 0.1;
     }
 
     return t;
@@ -2218,6 +2268,13 @@ action::Action Player::preCombat(const State& state)
             action::Action action{ action::TYPE_POTION };
             action.potion = config.pre_potion;
             return action;
+        }
+        else if (config.pre_presence_of_mind && talents.presence_of_mind && !has_pre_pom && !hasCooldown(cooldown::PRESENCE_OF_MIND) && !hasBuff(buff::PRESENCE_OF_MIND)) {
+            has_pre_pom = true;
+            auto timing = getNextTiming("presence_of_mind");
+            if (timing && timing->t <= 0)
+                useTiming(timing);
+            return buffCooldownAction<buff::PresenceOfMind, cooldown::PresenceOfMind>(true);
         }
         else if (!has_pre_cast) {
             has_pre_cast = true;

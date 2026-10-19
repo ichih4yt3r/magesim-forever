@@ -76,6 +76,8 @@ struct Config
     bool pre_incanters_absorption = false;
     bool pre_mana_incanters_absorption = false;
     bool pre_cast = false;
+    int pre_cast_spell = 0;
+    bool pre_presence_of_mind = false;
 
     Potion potion = POTION_NONE;
     Potion pre_potion = POTION_NONE;

@@ -735,6 +735,7 @@
                                         <th></th>
                                         <th>DPS</th>
                                         <th>Min/Max</th>
+                                        <th>Race</th>
                                         <th>Rotation</th>
                                         <th>Duration</th>
                                         <th>Iterations</th>
@@ -759,6 +760,9 @@
                                                 {{ round(profile.result.min_dps) }} - {{ round(profile.result.max_dps) }}
                                             </template>
                                             <template v-else>-</template>
+                                        </td>
+                                        <td>
+                                            {{ getRaceString(profile.config.race) }}
                                         </td>
                                         <td>
                                             {{ getRotationString(profile.config.rotation) }}
@@ -1561,9 +1565,36 @@
                                         </help>
                                     </label>
                                 </div>
-                                <div class="form-item" v-if="!aoeRotation">
-                                    <label><input type="checkbox" v-model="config.pre_cast">
-                                        <span>Pre-cast main spell</span>
+                                <div class="form-item">
+                                    <label>
+                                        <span>Pre-cast</span>
+                                        <help>
+                                            Started before pull so a cast-time spell finishes as combat begins.<br>
+                                            An instant finishes just before pull, and its global cooldown carries into the fight.
+                                        </help>
+                                    </label>
+                                    <select v-model.number="config.pre_cast_spell" @change="config.pre_cast = config.pre_cast_spell != 0">
+                                        <option :value="0">None</option>
+                                        <option :value="1239800" v-if="config.talents.arcane_wrath">Arcane Wrath</option>
+                                        <option :value="1239700" v-if="config.talents.arcane_blast">Arcane Blast</option>
+                                        <option :value="25345">Arcane Missiles</option>
+                                        <option :value="18809" v-if="config.talents.pyroblast">Pyroblast</option>
+                                        <option :value="42833">Fireball</option>
+                                        <option :value="1237313">Frostfire Bolt</option>
+                                        <option :value="10207">Scorch</option>
+                                        <option :value="25306">Fire Blast</option>
+                                        <option :value="25304">Frostbolt</option>
+                                        <option :value="1239801">Frost Blast</option>
+                                        <option :value="42931">Cone of Cold</option>
+                                    </select>
+                                </div>
+                                <div class="form-item" v-if="config.pre_cast_spell && config.talents.presence_of_mind">
+                                    <label><input type="checkbox" v-model="config.pre_presence_of_mind">
+                                        <span>Presence of Mind</span>
+                                        <help>
+                                            Cast Presence of Mind just before the pre-cast, so that spell is instant.<br>
+                                            Arcane Missiles keeps its channel. Presence of Mind then stays up for the next spell.
+                                        </help>
                                     </label>
                                 </div>
                             </fieldset>
@@ -2218,6 +2249,8 @@
                 pre_incanters_absorption: false,
                 pre_mana_incanters_absorption: false,
                 pre_cast: false,
+                pre_cast_spell: 0,
+                pre_presence_of_mind: false,
 
                 wrist_socket: false,
                 hands_socket: false,
@@ -4934,6 +4967,21 @@
                     this.parseWowheadTalents(m[1]);
                 else
                     alert("Unknown talent calculator");
+                this.syncPreCastTalents();
+            },
+
+            syncPreCastTalents() {
+                var spell = this.config.pre_cast_spell;
+                if (spell == 1239800 && !this.config.talents.arcane_wrath)
+                    spell = 0;
+                if (spell == 1239700 && !this.config.talents.arcane_blast)
+                    spell = 0;
+                if (spell == 18809 && !this.config.talents.pyroblast)
+                    spell = 0;
+                if (spell != this.config.pre_cast_spell) {
+                    this.config.pre_cast_spell = spell;
+                    this.config.pre_cast = spell != 0;
+                }
             },
 
             parseWowheadTalents(build) {
@@ -5947,6 +5995,26 @@
                 this.writeLocal("favorites", JSON.stringify(this.favorites));
             },
 
+            getRaceString(race) {
+                if (race == this.races.RACE_BLOOD_ELF)
+                    return "Blood elf";
+                if (race == this.races.RACE_DRAENEI)
+                    return "Draenei";
+                if (race == this.races.RACE_GNOME)
+                    return "Gnome";
+                if (race == this.races.RACE_HUMAN)
+                    return "Human";
+                if (race == this.races.RACE_TROLL)
+                    return "Troll";
+                if (race == this.races.RACE_UNDEAD)
+                    return "Undead";
+                if (race == this.races.RACE_SKYBORNE)
+                    return "Skyborne";
+                if (race == this.races.RACE_ORC)
+                    return "Orc";
+                return "Unknown";
+            },
+
             getRotationString(rot) {
                 if (rot == this.rotations.ROTATION_ST_FROSTFIRE)
                     return "Frostfire";
@@ -6311,9 +6379,25 @@
                 this.loadProfile(profile);
             },
 
+            rotationPreCastId() {
+                if (this.config.rotation == constants.rotations.ROTATION_ST_FIRE)
+                    return 42833;
+                if (this.config.rotation == constants.rotations.ROTATION_ST_FROSTFIRE)
+                    return 1237313;
+                if (this.config.rotation == constants.rotations.ROTATION_ST_AB_AM || this.config.rotation == constants.rotations.ROTATION_ST_AB_AM_BARRAGE)
+                    return 1239700;
+                if (this.config.rotation == constants.rotations.ROTATION_ST_FROST)
+                    return 25304;
+                if (this.config.rotation == constants.rotations.ROTATION_ST_FIRE_SC)
+                    return 10207;
+                return 42833;
+            },
+
             onLoadConfig(cfg) {
                 if (this.config.conjured == constants.potions.POTION_FLAME_CAP)
                     this.config.conjured = constants.conjureds.CONJURED_NONE;
+                if (this.config.pre_cast && !this.config.pre_cast_spell && !this.aoeRotation)
+                    this.config.pre_cast_spell = this.rotationPreCastId();
                 this.parseTalents();
             },
 
