@@ -213,8 +213,8 @@ namespace spell
         Frostbolt() : Spell(FROSTBOLT, "Frostbolt", SCHOOL_FROST)
         {
             cost = 11;
-            min_dmg = 515;
-            max_dmg = 555;
+            min_dmg = 383;
+            max_dmg = 412;
             cast_time = 3;
             coeff = 3/3.5;
             speed = 28;
@@ -223,13 +223,11 @@ namespace spell
 
     struct FrostBlast : Spell
     {
-        // Forever has not published this tooltip. Classic Frostbolt rank 1 is
-        // 18-20 damage and 25 mana. This is a little more of both.
         FrostBlast() : Spell(FROST_BLAST, "Frost Blast", SCHOOL_FROST)
         {
             cost = 4;
-            min_dmg = 22;
-            max_dmg = 26;
+            min_dmg = 80;
+            max_dmg = 88;
             cast_time = 1.5;
             coeff = 1.5/3.5;
         }

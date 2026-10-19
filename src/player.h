@@ -18,6 +18,8 @@ private:
     int arcaneWrathStackHold() const;
     int arcaneMissileStackHold() const;
     bool needsArcaneBlast(const State& state) const;
+    bool holdingMissilesForCooldown(const State& state) const;
+    action::Action missileBarrageCooldownWait(const State& state) const;
     std::shared_ptr<spell::Spell> spellFromId(int id) const;
     std::shared_ptr<spell::Spell> fillerSpell(const State& state);
     bool shouldMaintainImpScorch(const State& state, std::shared_ptr<target::Target> target) const;

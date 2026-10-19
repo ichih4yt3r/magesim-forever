@@ -1798,6 +1798,44 @@ bool Player::isTimingReadySoon(const std::string& name, const State& state, doub
     return false;
 }
 
+bool Player::holdingMissilesForCooldown(const State& state) const
+{
+    if (!hasBuff(buff::MISSILE_BARRAGE))
+        return false;
+
+    for (int i = 0; i < config.timings.size(); ++i) {
+        if (used_timings[i])
+            continue;
+
+        auto const& timing = config.timings[i];
+        if (timing.wait_for_buff != buff::MISSILE_BARRAGE)
+            continue;
+        if (timing.t > state.t)
+            continue;
+        if (timing.t + timing.wait_t <= state.t)
+            continue;
+
+        return true;
+    }
+
+    return false;
+}
+
+action::Action Player::missileBarrageCooldownWait(const State& state) const
+{
+    double remain = config.reaction_time / 1000.0;
+    auto it = buffs.find(buff::MISSILE_BARRAGE);
+    if (it != buffs.end())
+        remain = it->second->t_gained + config.reaction_time / 1000.0 - state.t;
+    if (remain < 0.001)
+        remain = 0.001;
+
+    action::Action action{ action::TYPE_WAIT };
+    action.value = remain;
+    action.str = "Missile Barrage";
+    return action;
+}
+
 std::vector<action::Action> Player::useTrinket(Trinket trinket, std::shared_ptr<cooldown::Cooldown> cooldown)
 {
     std::vector<action::Action> actions = Unit::useTrinket(trinket, cooldown);
@@ -2122,6 +2160,9 @@ std::shared_ptr<spell::Spell> Player::fillerSpell(const State& state)
 
 bool Player::shouldUseMissileBarrage(const State& state)
 {
+    if (holdingMissilesForCooldown(state))
+        return false;
+
     if (!canReactTo(buff::MISSILE_BARRAGE, state.t))
         return false;
 
@@ -2521,8 +2562,15 @@ action::Action Player::nextAction(const State& state)
         // AM / Abarr if we have AB stacks
         else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks && !has_mb && config.rotation == ROTATION_ST_AB_AM_BARRAGE)
             return spellAction<spell::ArcaneBarrage>(target);
-        else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks && (has_mb || arcaneMissileStackHold() == 0))
+        else if (buffStacks(buff::ARCANE_BLAST) >= ab_stacks && (has_mb || arcaneMissileStackHold() == 0)) {
+            // The proc is already on the player. Hold the channel until the waiting cooldown is used.
+            if (holdingMissilesForCooldown(state)) {
+                if (!has_mb)
+                    return missileBarrageCooldownWait(state);
+                return spellAction(ab, target);
+            }
             return spellAction<spell::ArcaneMissiles>(target);
+        }
         else {
             if (!needsArcaneBlast(state)) {
                 if (auto filler = fillerSpell(state))

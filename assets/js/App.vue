@@ -1137,12 +1137,12 @@
                                             </help>
                                         </label>
                                     </div>
-                                    <div class="form-item">
+                                    <!-- <div class="form-item"> hiding brainfreese
                                         <label><input type="checkbox" v-model="config.rot_brain_freeze_fireball">
                                             <span>Fireball with Brain Freeze</span>
                                             <help>Instead of Frostfire Bolt, which is the default</help>
                                         </label>
-                                    </div>
+                                    </div> -->
                                     <div class="form-item" v-if="config.talents.brain_freeze">
                                         <label>
                                             <span>Brain Freeze duration cutoff</span>
@@ -1347,8 +1347,8 @@
                                 </div> -->
                                 <div class="form-item">
                                     <label><input type="checkbox" v-model="config.buff_spell_crit">
-                                        <span>3% spell crit</span>
-                                        <help>Moonkin Aura</help>
+                                        <span>Moonkin Aura</span>
+                                        <help>3% crit</help>
                                     </label>
                                 </div>
                                 <!-- <div class="form-item">
