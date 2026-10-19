@@ -57,6 +57,7 @@ export default {
         ELIXIR_OWL: 1250940,
         ELIXIR_SAGES: 1250787,
         ELIXIR_WHALE:250348,
+        ELIXIR_GRIZZLY: 250351,
 
         // Spellpower Elixirs
         ELIXIR_GREATER_ARCANE: 13454,

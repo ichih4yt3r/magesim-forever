@@ -1477,6 +1477,12 @@
                                     </select>
                                 </div>
                                 <div class="form-item">
+                                    <label><input type="checkbox" v-model="config.elixir_grizzly" @change="calcStats">
+                                        <span>Elixir of the Grizzly</span>
+                                        <help>25 strength, 2% hit</help>
+                                    </label>
+                                </div>
+                                <div class="form-item">
                                     <label>Battle Elixir</label>
                                     <select v-model="config.battle_elixir" @change="calcStats">
                                         <option :value="elixirs.ELIXIR_NONE">None</option>
@@ -2214,6 +2220,7 @@
                 elixir_sp: 0,
                 elixir_crit: 0,
                 elixir_spirit: 0,
+                elixir_grizzly: false,
                 battle_elixir: 0,
                 guardian_elixir: 0,
                 
@@ -2718,8 +2725,8 @@
                             else if (arr[0] == "2h") {
                                 items = items.filter(item => filterBool(arr[1], _.get(item, "twohand", false)));
                             }
-                            else if (arr[0] == "set" || arr[0] == "itemset") {
-                                items = items.filter(item => filterBool(arr[1], _.get(item, "itemset", false)));
+                            else if (arr[0] == "set") {
+                                items = items.filter(item => filterBool(arr[1], _.get(item, "set", false)));
                             }
 
                             last_str = false;
@@ -3994,15 +4001,15 @@
                                 addStats(item.bonus);
                         }
 
-                        if (item.itemset) {
-                            if (!sets.hasOwnProperty(item.itemset)) {
-                                sets[item.itemset] = 1;
+                        if (item.set) {
+                            if (!sets.hasOwnProperty(item.set)) {
+                                sets[item.set] = 1;
                             }
                             else {
-                                sets[item.itemset]++;
-                                set = _.find(this.items.itemsets, {id: item.itemset})
+                                sets[item.set]++;
+                                set = _.find(this.items.sets, {id: item.set})
                                 if (set) {
-                                    setbonus = _.get(set, "set"+sets[item.itemset]);
+                                    setbonus = _.get(set, "set"+sets[item.set]);
                                     if (setbonus)
                                         addStats(setbonus);
                                 }
@@ -4155,6 +4162,9 @@
                     stats.spirit+= 25;
                     stats.crit+= 2;
                 }
+
+                if (this.config.elixir_grizzly)
+                    stats.hit+= 2;
                 
 
                 if (this.config.guardian_elixir == this.elixirs.ELIXIR_SPIRIT)
@@ -4412,11 +4422,11 @@
                         url+= "&ench="+enchant.enchantmentId;
                 }
 
-                if (item.itemset) {
+                if (item.set) {
                     var pcs = [];
                     for (var key in this.equipped) {
                         var itm = this.getItem(key, this.equipped[key]);
-                        if (_.get(itm, "itemset") == item.itemset)
+                        if (_.get(itm, "set") == item.set)
                             pcs.push(itm.id);
                     }
                     if (pcs.length)
@@ -4556,7 +4566,7 @@
                 for (var key in this.equipped) {
                     var slot = this.equipSlotToItemSlot(key);
                     var item = _.find(this.items.equip[slot], {id: this.equipped[key]});
-                    if (item && _.get(item, "itemset") == id)
+                    if (item && _.get(item, "set") == id)
                         num++;
                 }
 

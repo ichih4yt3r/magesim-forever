@@ -1063,9 +1063,23 @@ let enchants = {
     
 };
 
-let itemsets = [
-    { id: ids.GLADIATOR_SET, set2: { sp: 29 }, set4: { sp: 88 } },
-    { id: ids.DUSKWEAVE_SET, set2: { sp: 18 } },
+let sets = [
+    { id: ids.SET_BLOODVINE, set3: { crit: 2 }},
+    { id: ids.SET_ZANZIL, set2: { hit: 1, sp: 6 }},
+    { id: ids.SET_ZG, set2: { sp: 12 }},
+    { id: ids.SET_T1, set3: { sp: 18 }, set5: { spen: 10 }},
+    { id: ids.SET_D2, set6: { sp: 23 }},
+    { id: ids.SET_D1, set4: { sp: 23 }},
+    { id: ids.SET_DREADMIST, set4: { sp: 23 }},
+    { id: ids.SET_DEVOUT, set4: { sp: 23 }},
+    { id: ids.SET_POSTMASTER, set4: { sp: 12 }, set5: { int: 10 }},
+    { id: ids.SET_NECROPILE, set3: { int: 5 }, set5: { sp: 23 }},
+    { id: ids.SET_WARLORDS, set6: { sp: 23 }},
+    { id: ids.SET_MARSHALS, set6: { sp: 23 }},
+    { id: ids.SET_CHAMPIONS, set2: { sp: 23 }},
+    { id: ids.SET_COMMANDERS, set2: { sp: 23 }},
+    { id: ids.SET_DEFILERS, set3: { crit: 1 }},
+    { id: ids.SET_HIGHLANDERS, set3: { crit: 1 }},
 ];
 
-export default { ids, equip, gems, enchants, itemsets };
+export default { ids, equip, gems, enchants, sets };
