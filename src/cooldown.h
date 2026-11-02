@@ -35,6 +35,9 @@ namespace cooldown
         ARCANE_POWER = 12042,
         PRESENCE_OF_MIND = 12043,
         FIRE_WARD = 43010,
+        FROST_WARD = 28609,
+        ICE_BARRIER = 13033,
+        ICE_LANCE = 1240047,
         MIRROR_IMAGE = 55342,
         MIRROR_FIRE_BLAST = 59637,
         POWER_INFUSION = 10060,
@@ -165,6 +168,42 @@ namespace cooldown
         {
             id = FIRE_WARD;
             duration = 30;
+        }
+
+    };
+
+    class FrostWard : public Cooldown
+    {
+
+    public:
+        FrostWard()
+        {
+            id = FROST_WARD;
+            duration = 30;
+        }
+
+    };
+
+    class IceBarrier : public Cooldown
+    {
+
+    public:
+        IceBarrier()
+        {
+            id = ICE_BARRIER;
+            duration = 30;
+        }
+
+    };
+
+    class IceLance : public Cooldown
+    {
+
+    public:
+        IceLance()
+        {
+            id = ICE_LANCE;
+            duration = 8;
         }
 
     };
@@ -345,7 +384,7 @@ namespace cooldown
         TouchOfTheGrave()
         {
             id = TOUCH_OF_THE_GRAVE;
-            duration = 25;
+            duration = 15;
         }
 
     };

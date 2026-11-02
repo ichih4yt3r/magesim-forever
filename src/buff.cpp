@@ -41,7 +41,7 @@ ArcaneBlast::ArcaneBlast()
 {
     id = ARCANE_BLAST;
     name = "Arcane Blast";
-    duration = 15;
+    duration = 18;
     max_stacks = 4;
     stack_refresh = false;
     snapshot = true;
@@ -134,7 +134,7 @@ Berserking::Berserking()
 {
     id = BERSERKING;
     name = "Berserking";
-    duration = 10;
+    duration = 15;
 }
 
 BloodFury::BloodFury()
@@ -165,10 +165,10 @@ MissileBarrage::MissileBarrage()
     duration = 15;
 }
 
-HotStreak::HotStreak()
+HeatingUp::HeatingUp()
 {
-    id = HOT_STREAK;
-    name = "Hot Streak";
+    id = HEATING_UP;
+    name = "Heating Up";
     duration = 20;
     max_stacks = 3;
 }
@@ -214,6 +214,13 @@ FireWard::FireWard()
 {
     id = FIRE_WARD;
     name = "Fire Ward";
+    duration = 30;
+}
+
+FrostWard::FrostWard()
+{
+    id = FROST_WARD;
+    name = "Frost Ward";
     duration = 30;
 }
 
@@ -624,6 +631,13 @@ CharredTwilightScaleNm::CharredTwilightScaleNm()
     name = "Twilight Flames";
     duration = 15;
     stats.spell_power = 763;
+}
+
+IceBarrier::IceBarrier()
+{
+    id = ICE_BARRIER;
+    name = "Ice Barrier";
+    duration = 60;
 }
 
 NevermeltingIceCrystal::NevermeltingIceCrystal()

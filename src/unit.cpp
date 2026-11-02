@@ -28,6 +28,7 @@ void Unit::reset()
     debuffs.clear();
     cooldowns.clear();
 
+    buff_stats.stamina = 0;
     buff_stats.intellect = 0;
     buff_stats.spirit = 0;
     buff_stats.mp5 = 0;
@@ -168,6 +169,7 @@ void Unit::removeSnapshots()
 
 void Unit::addBuffStats(const Stats& _stats, int stacks)
 {
+    buff_stats.stamina += _stats.stamina * stacks;
     buff_stats.intellect += _stats.intellect * stacks;
     buff_stats.spirit += _stats.spirit * stacks;
     buff_stats.mp5 += _stats.mp5 * stacks;
@@ -180,6 +182,7 @@ void Unit::addBuffStats(const Stats& _stats, int stacks)
 
 void Unit::removeBuffStats(const Stats& _stats, int stacks)
 {
+    buff_stats.stamina -= _stats.stamina * stacks;
     buff_stats.intellect -= _stats.intellect * stacks;
     buff_stats.spirit -= _stats.spirit * stacks;
     buff_stats.mp5 -= _stats.mp5 * stacks;
@@ -246,6 +249,14 @@ double Unit::maxMana() const
 {
     // Subtract 280 because the first 20 intellect only gives 1 mana instead of 15
     return base_mana + stats.intellect * 15 - 280;
+}
+
+double Unit::maxHealth() const
+{
+    // First 20 stamina grant 1 health. Every point after that grants 10.
+    double stamina = getStamina();
+    double from_stamina = stamina < 20.0 ? stamina : 20.0 + (stamina - 20.0) * 10.0;
+    return base_health + from_stamina;
 }
 
 double Unit::manaPercent() const
@@ -346,11 +357,17 @@ bool Unit::canBuff(const buff::Buff &buff) const
 
 bool Unit::canMiss(std::shared_ptr<spell::Spell> spell) const
 {
+    if (spell->id == spell::TOUCH_OF_THE_GRAVE)
+        return false;
+
     return !spell->dot;
 }
 
 bool Unit::canCrit(std::shared_ptr<spell::Spell> spell) const
 {
+    if (spell->id == spell::TOUCH_OF_THE_GRAVE)
+        return false;
+
     return !spell->dot;
 }
 
@@ -425,6 +442,11 @@ double Unit::manaCostMultiplier(std::shared_ptr<spell::Spell> spell) const
         multi *= 0.8;
 
     return multi;
+}
+
+double Unit::getStamina() const
+{
+    return stats.stamina + buff_stats.stamina;
 }
 
 double Unit::getIntellect() const

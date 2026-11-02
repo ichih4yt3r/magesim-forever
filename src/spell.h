@@ -36,6 +36,8 @@ namespace spell
         DEEP_FREEZE = 44572,
         COLD_SNAP = 11958,
         FIRE_WARD = 43010,
+        FROST_WARD = 28609,
+        ICE_BARRIER = 13033,
         MANA_SHIELD = 43020,
         IGNITE = 12848,
         MANA_GEM = 42987,
@@ -221,6 +223,7 @@ namespace spell
         }
     };
 
+    // Still defined, but no longer trainable. Rotations do not cast it.
     struct FrostBlast : Spell
     {
         FrostBlast() : Spell(FROST_BLAST, "Frost Blast", SCHOOL_FROST)
@@ -516,6 +519,26 @@ namespace spell
         }
     };
 
+    struct FrostWard : Spell
+    {
+        FrostWard() : Spell(FROST_WARD, "Frost Ward", SCHOOL_FROST)
+        {
+            cost = 34;
+            is_trigger = true;
+            can_proc = false;
+        }
+    };
+
+    struct IceBarrier : Spell
+    {
+        IceBarrier() : Spell(ICE_BARRIER, "Ice Barrier", SCHOOL_FROST)
+        {
+            cost = 51;
+            is_trigger = true;
+            can_proc = false;
+        }
+    };
+
     struct ManaShield : Spell
     {
         ManaShield() : Spell(MANA_SHIELD, "Mana Shield", SCHOOL_ARCANE)
@@ -769,6 +792,8 @@ namespace spell
             gcd = 0;
             active_use = false;
             can_proc = false;
+            fixed_dmg = true;
+            binary = true;
         }
     };
 }

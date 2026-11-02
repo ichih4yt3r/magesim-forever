@@ -28,7 +28,8 @@ protected:
 
 public:
     std::string name;
-    double base_mana = 2241;
+    double base_mana = 0;
+    double base_health = 0;
     double mana = 0;
     double t_gcd = 0;
     double t_gcd_capped = 0;
@@ -85,6 +86,8 @@ public:
 
     virtual double maxMana() const;
 
+    virtual double maxHealth() const;
+
     double manaPercent() const;
 
     double manaPerTick(const State& state) const;
@@ -132,6 +135,8 @@ public:
     virtual double manaCostMod(std::shared_ptr<spell::Spell> spell, double mana_cost) const;
 
     virtual double manaCostMultiplier(std::shared_ptr<spell::Spell> spell) const;
+
+    virtual double getStamina() const;
 
     virtual double getIntellect() const;
 

@@ -53,6 +53,23 @@
                                 <td>{{ display_stats.mana }}</td>
                             </tr>
                             <tr>
+                                <td>
+                                    Health
+                                    <help v-if="config.race == races.RACE_UNDEAD">Touch of the Grave deals 5% of this health.</help>
+                                </td>
+                                <td>{{ display_stats.health }}</td>
+                            </tr>
+                            <tr>
+                                <td :class="[config.custom_stats.stamina ? 'active' : '']">
+                                    Stamina
+                                    <span v-if="config.custom_stats.stamina">
+                                        ({{ plusMinus(config.custom_stats.stamina) }})
+                                        <tooltip position="t">{{ config.custom_stats.stamina }} bonus stamina</tooltip>
+                                    </span>
+                                </td>
+                                <td>{{ display_stats.stamina }}</td>
+                            </tr>
+                            <tr>
                                 <td :class="[config.custom_stats.intellect ? 'active' : '']">
                                     Intellect
                                     <span v-if="config.custom_stats.intellect">
@@ -61,6 +78,10 @@
                                     </span>
                                 </td>
                                 <td>{{ display_stats.intellect }}</td>
+                            </tr>
+                            <tr v-if="display_stats.armor">
+                                <td>Armor</td>
+                                <td>{{ display_stats.armor }}</td>
                             </tr>
                             <tr>
                                 <td :class="[config.custom_stats.spirit ? 'active' : '']">
@@ -129,11 +150,9 @@
                                     <span>{{ round(display_stats.hit, 2) }}%</span>
                                     <tooltip position="r">
                                         <div class="tal">
-                                            <div v-if="config.talents.precision">{{ config.talents.precision }}% from Precision</div>
-                                            <div v-if="config.talents.precision && config.rotation == rotations.ROTATION_ST_FROSTFIRE">{{ config.talents.precision }}% extra from Precision (ffb only)</div>
+                                            <div v-if="config.talents.precision">{{ Math.min(config.talents.precision, 3) * 2 }}% from Precision (all spells)</div>
                                             <div v-if="config.debuff_spell_hit">3% from spell hit debuff</div>
                                             <div v-if="config.heroic_presence && faction == 'alliance'">1% from Heroic Presence</div>
-                                            <div v-if="config.talents.arcane_focus">3% from Arcane Focus (arcane only)</div>
                                         </div>
                                     </tooltip>
                                 </td>
@@ -814,13 +833,6 @@
                                         <option :value="races.RACE_ORC">Orc</option>
                                     </select>
                                 </div>
-                                <div class="form-item" v-if="config.race == races.RACE_UNDEAD">
-                                    <label>
-                                        <span>Max health</span>
-                                        <help>Touch of the Grave caps at 5% of your health. Stamina is not calculated yet, so enter your max health here.</help>
-                                    </label>
-                                    <input type="text" v-model.number="config.player_health">
-                                </div>
                                 <div class="form-item">
                                     <label>Talents (<a :href="config.build" target="_blank">link</a>)</label>
                                     <input type="text" v-model="config.build" @input="onBuildInput">
@@ -896,7 +908,7 @@
                                             This only affects certain mechanics where an instant reaction can have an important impact on the rotation, like:<br>
                                             Cooldowns with "wait for"<br>
                                             Missile Barrage<br>
-                                            Hot Streak<br>
+                                            Heating Up<br>
                                             Brain Freeze
                                         </help>
                                     </label>
@@ -1000,26 +1012,26 @@
                                         <help>Imp. Scorch from you</help>
                                     </label>
                                 </div>
-                                <div class="form-item" v-if="config.talents.hot_streak && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
+                                <div class="form-item" v-if="config.talents.heating_up && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
                                     <label>
-                                        <span>Pyroblast at Hot Streak stacks</span>
+                                        <span>Pyroblast at Heating Up stacks</span>
                                         <help>
-                                            Pyroblast is cast once Hot Streak reaches this many stacks.<br>
+                                            Pyroblast is cast once Heating Up reaches this many stacks.<br>
                                             The buff lasts 20 seconds and its timer resets when a stack is gained.<br>
                                             With fewer stacks, Pyroblast is held until another spell would leave less than your reaction time before the buff expires.
                                         </help>
                                     </label>
-                                    <select v-model.number="config.rot_hot_streak_stacks">
+                                    <select v-model.number="config.rot_heating_up_stacks">
                                         <option :value="1">1</option>
                                         <option :value="2">2</option>
                                         <option :value="3">3</option>
                                     </select>
                                 </div>
-                                <div class="form-item" v-if="config.talents.hot_streak && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
-                                    <label><input type="checkbox" v-model="config.rot_fire_blast_hot_streak">
-                                        <span>Fire Blast to build Hot Streak</span>
+                                <div class="form-item" v-if="config.talents.heating_up && [rotations.ROTATION_ST_FIRE, rotations.ROTATION_ST_FROSTFIRE, rotations.ROTATION_ST_FIRE_SC].indexOf(config.rotation) != -1">
+                                    <label><input type="checkbox" v-model="config.rot_fire_blast_heating_up">
+                                        <span>Fire Blast to build Heating Up</span>
                                         <help>
-                                            While Hot Streak is below the Pyroblast stack goal, cast Fire Blast on cooldown.<br>
+                                            While Heating Up is below the Pyroblast stack goal, cast Fire Blast on cooldown.<br>
                                             A hit adds one stack. A critical hit adds two.<br>
                                             Off leaves Fire Blast as a movement and end-of-fight spell.
                                         </help>
@@ -1131,8 +1143,8 @@
                                         <label><input type="checkbox" v-model="config.rot_winters_chill">
                                             <span>Spend Winter's Chill with Cone of Cold</span>
                                             <help>
-                                                Build Winter's Chill with Frostbolt, and with Frost Blast while moving.<br>
-                                                Cone of Cold consumes the debuff at 5 stacks, or earlier if it would fall off before the next Frostbolt lands.<br>
+                                                Build Winter's Chill with Frostbolt. While moving, Ice Lance is used when it is ready and in range, otherwise Fire Blast.<br>
+                                                Each stack adds 20% damage to the next Cone of Cold. Cone of Cold consumes the debuff at 5 stacks, or earlier if it would fall off before the next Frostbolt lands.<br>
                                                 Fingers of Frost and Brain Freeze stay higher priority.
                                             </help>
                                         </label>
@@ -1590,8 +1602,9 @@
                                         <option :value="10207">Scorch</option>
                                         <option :value="25306">Fire Blast</option>
                                         <option :value="25304">Frostbolt</option>
-                                        <option :value="1239801">Frost Blast</option>
                                         <option :value="42931">Cone of Cold</option>
+                                        <option :value="28609">Frost Ward</option>
+                                        <option :value="13033" v-if="config.talents.ice_barrier">Ice Barrier</option>
                                     </select>
                                 </div>
                                 <div class="form-item" v-if="config.pre_cast_spell && config.talents.presence_of_mind">
@@ -1936,10 +1949,10 @@
                 <div class="inner">
                     <div class="title">Bonus stats</div>
                     <div class="description">Add additional stats to your character.</div>
-                    <!-- <div class="form-item form-row">
+                    <div class="form-item form-row">
                         <label>Stamina</label>
                         <input type="number" v-model.number="config.custom_stats.stamina">
-                    </div> -->
+                    </div>
                     <div class="form-item form-row">
                         <label>Intellect</label>
                         <input type="number" v-model.number="config.custom_stats.intellect">
@@ -2009,6 +2022,10 @@
                                 <option value="uncommon">Uncommon</option>
                                 <option value="common">Common</option>
                             </select>
+                        </div>
+                        <div class="form-item form-row">
+                            <label>Stamina</label>
+                            <input type="number" v-model.number="custom_item.sta">
                         </div>
                         <div class="form-item form-row">
                             <label>Intellect</label>
@@ -2286,10 +2303,10 @@
                 rot_am_ab_after: 0,
                 rot_filler: 0,
                 rot_winters_chill: false,
-                rot_fire_blast_hot_streak: false,
+                rot_fire_blast_heating_up: false,
                 rot_brain_freeze_fireball: false,
                 rot_brain_freeze_hold: 15,
-                rot_hot_streak_stacks: 3,
+                rot_heating_up_stacks: 3,
                 rot_black_magic: false,
                 rot_black_magic_ench: 0,
                 evo_ticks: 0,
@@ -2297,10 +2314,10 @@
                 timings: Array(),
                 interruptions: Array(),
 
-                build: "https://www.wowhead.com/forever/talent-calc/mage/v2055205023100311531-03-0550000001_t0",
+                build: "https://www.wowhead.com/forever/talent-calc/mage/v205205023100311531-3-0530000001_t0",
 
                 stats: {
-                    // stamina: 0,
+                    stamina: 0,
                     intellect: 0,
                     spirit: 0,
                     mp5: 0,
@@ -2314,7 +2331,7 @@
                 },
 
                 custom_stats: {
-                    // stamina: 0,
+                    stamina: 0,
                     intellect: 0,
                     spirit: 0,
                     mp5: 0,
@@ -2354,7 +2371,7 @@
                     imp_flamestrike: 0,
                     pyroblast: 0,
                     imp_scorch: 0,
-                    hot_streak: 0,
+                    heating_up: 0,
                     master_of_elements: 0,
                     critical_mass: 0,
                     blast_wave: 0,
@@ -2363,11 +2380,13 @@
 
                     imp_frostbolt: 0,
                     precision: 0,
+                    arctic_reach: 0,
+                    frost_warding: 0,
                     ice_shards: 0,
-                    piercing_ice: 0,
                     frost_channeling: 0,
                     ice_lance: 0,
                     imp_blizzard: 0,
+                    ice_barrier: 0,
                     shatter: 0,
                     imp_cone_of_cold: 0,
                     cold_snap: 0,
@@ -2464,6 +2483,7 @@
                     q: "epic",
                     sockets: null,
                     meta_socket: false,
+                    sta: null,
                     int: null,
                     spi: null,
                     sp: null,
@@ -2533,54 +2553,55 @@
             data.slots = [...slots];
 
             data.talent_map[0][0] = "wand_specialization";
-            data.talent_map[0][1] = "arcane_focus";
-            data.talent_map[0][2] = "improved_channeling";
-            data.talent_map[0][3] = "missile_barrage";
-            data.talent_map[0][4] = "arcane_subtlety";
-            data.talent_map[0][5] = "magic_absorption";
-            data.talent_map[0][6] = "clearcast";
-            data.talent_map[0][7] = "arcane_resilience";
-            data.talent_map[0][8] = "arcane_geometry";
-            data.talent_map[0][9] = "arcane_impact";
-            data.talent_map[0][10] = "arcane_blast";
-            data.talent_map[0][11] = "arcane_shielding";
-            data.talent_map[0][12] = "improved_counterspell";
-            data.talent_map[0][13] = "arcane_meditation";
-            data.talent_map[0][14] = "arcane_wrath";
-            data.talent_map[0][15] = "presence_of_mind";
-            data.talent_map[0][16] = "arcane_mind";
-            data.talent_map[0][17] = "arcane_instability";
-            data.talent_map[0][18] = "arcane_power";
+            data.talent_map[0][1] = "improved_channeling";
+            data.talent_map[0][2] = "arcane_resilience";
+            data.talent_map[0][3] = "arcane_subtlety";
+            data.talent_map[0][4] = "magic_absorption";
+            data.talent_map[0][5] = "clearcast";
+            data.talent_map[0][6] = "missile_barrage";
+            data.talent_map[0][7] = "arcane_geometry";
+            data.talent_map[0][8] = "arcane_impact";
+            data.talent_map[0][9] = "arcane_blast";
+            data.talent_map[0][10] = "arcane_shielding";
+            data.talent_map[0][11] = "improved_counterspell";
+            data.talent_map[0][12] = "arcane_meditation";
+            data.talent_map[0][13] = "arcane_wrath";
+            data.talent_map[0][14] = "presence_of_mind";
+            data.talent_map[0][15] = "arcane_mind";
+            data.talent_map[0][16] = "arcane_instability";
+            data.talent_map[0][17] = "arcane_power";
 
-            data.talent_map[1][0] = "imp_fire_blast";
-            data.talent_map[1][1] = "incineration";
-            data.talent_map[1][2] = "imp_fireball";
-            data.talent_map[1][3] = "ignite";
-            data.talent_map[1][4] = "flame_throwing";
-            data.talent_map[1][5] = "impact";
-            data.talent_map[1][6] = "burning_soul";
-            data.talent_map[1][7] = "imp_flamestrike";
-            data.talent_map[1][8] = "pyroblast";
-            data.talent_map[1][9] = "imp_scorch";
-            data.talent_map[1][11] = "hot_streak";
+            data.talent_map[1][0] = "incineration";
+            data.talent_map[1][1] = "imp_fireball";
+            data.talent_map[1][2] = "ignite";
+            data.talent_map[1][3] = "flame_throwing";
+            data.talent_map[1][4] = "impact";
+            data.talent_map[1][5] = "burning_soul";
+            data.talent_map[1][6] = "imp_flamestrike";
+            data.talent_map[1][7] = "pyroblast";
+            data.talent_map[1][8] = "imp_scorch";
+            data.talent_map[1][10] = "imp_fire_blast";
+            data.talent_map[1][11] = "heating_up";
             data.talent_map[1][12] = "master_of_elements";
             data.talent_map[1][13] = "critical_mass";
             data.talent_map[1][14] = "blast_wave";
             data.talent_map[1][15] = "fire_power";
             data.talent_map[1][16] = "combustion";
 
+            data.talent_map[2][0] = "frost_warding";
             data.talent_map[2][1] = "imp_frostbolt";
             data.talent_map[2][2] = "precision";
+            data.talent_map[2][10] = "arctic_reach";
             data.talent_map[2][3] = "ice_shards";
-            data.talent_map[2][7] = "piercing_ice";
-            data.talent_map[2][8] = "frost_channeling";
+            data.talent_map[2][7] = "frost_channeling";
+            data.talent_map[2][8] = "imp_blizzard";
             data.talent_map[2][9] = "ice_lance";
-            data.talent_map[2][10] = "imp_blizzard";
-            data.talent_map[2][13] = "shatter";
-            data.talent_map[2][14] = "imp_cone_of_cold";
-            data.talent_map[2][15] = "cold_snap";
-            data.talent_map[2][16] = "fingers_of_frost";
-            data.talent_map[2][17] = "winters_chill";
+            data.talent_map[2][12] = "shatter";
+            data.talent_map[2][13] = "imp_cone_of_cold";
+            data.talent_map[2][14] = "cold_snap";
+            data.talent_map[2][15] = "fingers_of_frost";
+            data.talent_map[2][16] = "winters_chill";
+            data.talent_map[2][17] = "ice_barrier";
 
             return data;
         },
@@ -2932,6 +2953,16 @@
                     title: "Cold Snap",
                     icon: "https://wow.zamimg.com/images/wow/icons/large/spell_frost_wizardmark.jpg",
                 });
+                timings.push({
+                    name: "ice_barrier",
+                    title: "Ice Barrier",
+                    icon: "https://wow.zamimg.com/images/wow/icons/large/spell_ice_lament.jpg",
+                });
+                timings.push({
+                    name: "frost_ward",
+                    title: "Frost Ward",
+                    icon: "https://wow.zamimg.com/images/wow/icons/large/spell_frost_frostward.jpg",
+                });
                 /* timings.push({
                     name: "hyperspeed_accelerators",
                     title: "Hyperspeed Accelerators",
@@ -3132,8 +3163,8 @@
                     buffs.push({id: constants.buffs.FINGERS_OF_FROST, name: "Fingers of Frost"});
                 if (this.config.talents.brain_freeze)
                     buffs.push({id: constants.buffs.BRAIN_FREEZE, name: "Brain Freeze"});
-                if (this.config.talents.hot_streak)
-                    buffs.push({id: constants.buffs.HOT_STREAK, name: "Hot Streak"});
+                if (this.config.talents.heating_up)
+                    buffs.push({id: constants.buffs.HEATING_UP, name: "Heating Up"});
                 if (this.config.talents.firestarter)
                     buffs.push({id: constants.buffs.FIRESTARTER, name: "Firestarter"});
                 if (this.config.talents.molten_fury)
@@ -3312,6 +3343,10 @@
                     return this.config.talents.icy_veins > 0;
                 if (name == "cold_snap")
                     return this.config.talents.cold_snap > 0;
+                if (name == "ice_barrier")
+                    return this.config.talents.ice_barrier > 0;
+                if (name == "frost_ward")
+                    return true;
                 if (name == "water_elemental")
                     return this.config.talents.water_elemental > 0;
                 if (name == "trinket1")
@@ -3901,9 +3936,9 @@
             },
 
             baseStats() {
-                // Undead default
+                // Undead default. Level 60 mage base attributes, before racial percentages.
                 var stats = {
-                    // stamina: 120,
+                    stamina: 46,
                     intellect: 123,
                     spirit: 125,
                     mp5: 0,
@@ -3918,30 +3953,37 @@
                 };
 
                 if (this.config.race == this.races.RACE_TROLL) {
+                    stats.stamina = 46;
                     stats.intellect = 121;
                     stats.spirit = 121;
                 }
                 if (this.config.race == this.races.RACE_BLOOD_ELF) {
+                    stats.stamina = 45;
                     stats.intellect = 125;
                     stats.spirit = 125;
                 }
                 if (this.config.race == this.races.RACE_DRAENEI) {
+                    stats.stamina = 45;
                     stats.intellect = 125;
                     stats.spirit = 125;
                 }
                 if (this.config.race == this.races.RACE_GNOME) {
+                    stats.stamina = 44;
                     stats.intellect = 128;
                     stats.spirit = 120;
                 }
                 if (this.config.race == this.races.RACE_HUMAN) {
+                    stats.stamina = 45;
                     stats.intellect = 125;
                     stats.spirit = 126;
                 }
                 if (this.config.race == this.races.RACE_SKYBORNE) {
+                    stats.stamina = 45;
                     stats.intellect = 125;
                     stats.spirit = 125;
                 }
                 if (this.config.race == this.races.RACE_ORC) {
+                    stats.stamina = 45;
                     stats.intellect = 125;
                     stats.spirit = 125;
                 }
@@ -3953,7 +3995,7 @@
                 var stats = this.baseStats();
 
                 var item_stats = {
-                    // sta: 0,
+                    sta: 0,
                     int: 0,
                     spi: 0,
                     mp5: 0,
@@ -4018,7 +4060,7 @@
                     }
                 }
 
-                // stats.stamina+= item_stats.sta;
+                stats.stamina+= item_stats.sta;
                 stats.intellect+= item_stats.int;
                 stats.spirit+= item_stats.spi;
                 stats.mp5+= item_stats.mp5;
@@ -4127,6 +4169,7 @@
                     x = 14;
                     /* if (this.config.imp_mark_of_the_wild)
                         x = 52; */
+                    stats.stamina+= x;
                     stats.intellect+= x;
                     stats.spirit+= x;
                 }
@@ -4281,15 +4324,18 @@
                 if (this.config.race == this.races.RACE_SKYBORNE)
                     stats.haste = this.multiplyHaste(stats.haste, 3);
                 if (this.config.blessing_of_kings) {
+                    stats.stamina*= 1.1;
                     stats.intellect*= 1.1;
                     stats.spirit*= 1.1;
                 }
                 if (this.config.drums_of_forgotten_kings) {
+                    stats.stamina*= 1.08;
                     stats.intellect*= 1.08;
                     stats.spirit*= 1.08;
                 }
                 if (this.metaGem() && this.metaGem().id == this.items.ids.META_EMBER_SKYFLARE)
                     stats.intellect*= 1.02;
+                stats.stamina = Math.round(stats.stamina);
                 stats.intellect = Math.round(stats.intellect);
                 stats.spirit = Math.round(stats.spirit);
 
@@ -4297,7 +4343,6 @@
                     stats.hit+= 1;
                 stats.crit+= this.config.talents.arcane_instability || 0;
                 stats.crit+= this.config.talents.pyromaniac || 0;
-                stats.hit+= this.config.talents.precision || 0;
 
                 // Level 60 mage: 1% spell crit per 59.5 intellect, plus the 0.91% class base.
                 stats.crit+= stats.intellect/59.5;
@@ -4356,8 +4401,19 @@
                     stats.mana+= stats.bonus_mana;
 
                 stats.mana = Math.round(stats.mana);
+                stats.health = this.healthFromStamina(stats.stamina);
+                var resilience = this.config.talents.arcane_resilience || 0;
+                if (resilience > 3)
+                    resilience = 3;
+                stats.armor = Math.round(stats.intellect * 0.25 * resilience);
 
                 this.display_stats = stats;
+            },
+
+            healthFromStamina(stamina) {
+                // Level 60 mage base health is 1370. First 20 stamina grant 1 health, then 10 each.
+                var from_stamina = stamina < 20 ? stamina : 20 + (stamina - 20) * 10;
+                return Math.round(1370 + from_stamina);
             },
 
             calcStats() {
@@ -4938,19 +4994,19 @@
 
             setSpec(spec) {
                 if (spec == "arcane") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20502205003100311531-230500031-005_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v2000205203100311531-30500031002-003_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_AB_AM;
                 }
                 else if (spec == "fire") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20402205-23550000130135131-005_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20002052-35500001302133131-003_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FIRE;
                 }
                 else if (spec == "frost") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20502050030003--0555000331020001251_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v20000502300003--05350003130000012_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROST;
                 }
                 else if (spec == "ffb") {
-                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v2-0355003003003304-00550003310003002_t0";
+                    this.config.build = "https://www.wowhead.com/forever/talent-calc/mage/v2-3550030030003304-0035000301003002_t0";
                     this.config.rotation = constants.rotations.ROTATION_ST_FROSTFIRE;
                 }
 
@@ -4978,6 +5034,7 @@
                 else
                     alert("Unknown talent calculator");
                 this.syncPreCastTalents();
+                this.calcStats();
             },
 
             syncPreCastTalents() {
@@ -4987,6 +5044,8 @@
                 if (spell == 1239700 && !this.config.talents.arcane_blast)
                     spell = 0;
                 if (spell == 18809 && !this.config.talents.pyroblast)
+                    spell = 0;
+                if (spell == 1239801)
                     spell = 0;
                 if (spell != this.config.pre_cast_spell) {
                     this.config.pre_cast_spell = spell;
@@ -5019,6 +5078,14 @@
                     else {
                         if (this.talent_map[tree][talent]) {
                             value = parseInt(ch);
+                            if (this.talent_map[tree][talent] == "precision")
+                                value = Math.min(value, 3);
+                            if (this.talent_map[tree][talent] == "frost_warding" || this.talent_map[tree][talent] == "arctic_reach")
+                                value = Math.min(value, 2);
+                            if (this.talent_map[tree][talent] == "arcane_resilience" || this.talent_map[tree][talent] == "critical_mass")
+                                value = Math.min(value, 3);
+                            if (this.talent_map[tree][talent] == "incineration")
+                                value = Math.min(value, 5);
                             this.config.talents[this.talent_map[tree][talent]] = value;
                         }
                         talent++;
@@ -5050,7 +5117,7 @@
                 var trees = [
                     [2,5,5,2,2,5,2,2,3,1,2,2,3,1,1,5,3,1],
                     [2,3,5,5,2,3,3,3,1,3,2,1,3,3,1,5,1],
-                    [2,5,5,5,3,2,3,3,3,1,3,2,1,3,3,1,2,5,1],
+                    [2,5,3,5,3,2,3,3,3,1,3,2,1,3,3,1,2,5,1],
                 ];
 
                 for (var i=0; i<build.length; i++) {
@@ -5495,7 +5562,7 @@
                         "Empowered Fire": [1, 22],
                         "Firestarter": [1, 23],
                         "Dragon's Breath": [1, 24],
-                        "Hot Streak": [1, 25],
+                        "Heating Up": [1, 25],
                         "Burnout": [1, 26],
                         "Living Bomb": [1, 27],
                         "Frostbite": [2, 0],

@@ -25,10 +25,10 @@ struct Talents
     int wand_specialization = 0;
 
     /*Changed*/
-    int arcane_focus = 0; // 1% hit with arcane spells
+    int arcane_focus = 0; // removed from the arcane tree
     int arcane_subtlety = 0; // reduces target resistance of all spells by 8 x2, and threat of arcane spells by 15% x2
     int magic_absorption = 0; // increase all res by 5, all spells fully resisted restores 1% total mana. no more then 1 per sec
-    int arcane_resilience = 0;
+    int arcane_resilience = 0; // 25% of intellect as armor per rank, 3 ranks, up to 75%
     int arcane_impact = 0; // crit of arcane spells by 2% x 3
     int arcane_meditation = 0; // 17 33 50 mana regen while casting
     int missile_barrage = 0; // 2 pts: 40% from Arcane Blast, 20% from Arcane Wrath, Fireball, Frostbolt, Frostfire Bolt
@@ -37,7 +37,7 @@ struct Talents
     int arcane_power = 0; // 15s deal 30% more damage while costing 30% MORE mana
 
     /* NEW */
-    int arcane_blast = 0; // 1.5s cast. 15% intellect spell power per stack, up to 4, for 15s from the first stack. Mana +175% per stack.
+    int arcane_blast = 0; // 1.5s cast. 12% intellect spell power per stack, up to 4, for 18s. Mana +100% per stack.
     int arcane_geometry = 0; //Arcane Spell Range by 3 x2
     int improved_channeling = 0; // 20% x5 chance to avoid interuption by damage while channeling AM and 14% x5 casting AB
     int improved_counterspell = 0;
@@ -63,14 +63,14 @@ struct Talents
     int flame_throwing = 0; // 3meters range x2
     int impact = 0;
     int master_of_elements = 0;
-    int critical_mass = 0;
+    int critical_mass = 0; // 2% fire crit x3, up to 6%
     int blast_weave = 0;
     int blast_wave = 0;
     int fire_power = 0; // 1% fire damage per qualifying effect per point, cap 12%
 
     // Changed
-    int incineration = 0;
-    int imp_fireball = 0;
+    int incineration = 0; // 2% crit x5 for Fire Blast, Ice Lance, Arcane Blast, and Scorch
+    int imp_fireball = 0; // Accelerant: -0.1s cast x5 for Fireball, Frostfire Bolt, and Arcane Wrath
     int ignite = 0;
     int burning_soul = 0; // fire spells chance to not lose casting time 23% x3, reduced threat. 
     int imp_flamestrike = 0; // crit 5% for flamestrike x3
@@ -79,7 +79,7 @@ struct Talents
     int combustion = 0; // increased fire crit strike chance by 10%, until 4 crits (not dots). 
 
     // NEW
-    int hot_streak = 0; // non-dot Crits grant Buff, reduces Pyroblast cast time by 25% x3 (75% faster or 1.5sec)
+    int heating_up = 0; // non-dot Crits grant Buff, reduces Pyroblast cast time by 25% x3 (75% faster or 1.5sec)
     
 
 
@@ -95,25 +95,29 @@ struct Talents
     int enduring_winter = 0;
     int chilled_to_the_bone = 0;
     int deep_freeze = 0;
+    int ice_barrier = 0;
+    
 
     // remained unchanged and IN
     int imp_frostbolt = 0; //
     int imp_blizzard = 0;
     int ice_shards = 0; //20% crit x5 damage bonus for frost spells (100% crit chance)
-    int piercing_ice = 0; // 2% damage of frost spells - up to 6% total.
+    int piercing_ice = 0; // removed from the frost tree
 
     // Changed
-    int precision = 0; // 1% flat x5 for fire and frost spells
+    int precision = 0; // 2% hit x3 for all spells, up to 6%
+    int arctic_reach = 0; // 10% range x2 for Frostbolt, Blizzard, Frost Nova, Cone of Cold, and Ice Lance
     int permafrost = 0; // chill duration by 11% x3 target speed by 3% x3
     int frost_channeling = 0; // mana cost reduction of frost spells by 5% x3 and threat by 10% x3
+    int frost_warding = 0; // +10/20% Ice Barrier and Frost Ward absorb. Frost Ward chance negates instead of reflecting.
     int shatter = 0;
     int imp_cone_of_cold = 0;
     int cold_snap = 0;
-    int winters_chill = 0; // 20% per rank to apply. Stacks make the next Cone of Cold hit harder, then are consumed.
+    int winters_chill = 0; // 20% per rank to apply. Each stack adds 20% damage to the next Cone of Cold, then is consumed.
 
 
     // NEW
-    int ice_lance = 0; // Instant frost damage. Frozen targets take x2 damage (x3 with the glyph).
+    int ice_lance = 0; // Instant frost damage, 8s cooldown. Frozen targets take x3 damage (x4 with the glyph).
     int fingers_of_frost = 0;
      
 

@@ -103,10 +103,10 @@ struct Config
     int rot_am_ab_after = 0;
     int rot_filler = 0;
     bool rot_winters_chill = false;
-    bool rot_fire_blast_hot_streak = false;
+    bool rot_fire_blast_heating_up = false;
     bool rot_brain_freeze_fireball = false;
     double rot_brain_freeze_hold = 15;
-    int rot_hot_streak_stacks = 3;
+    int rot_heating_up_stacks = 3;
     bool rot_black_magic = false;
     Enchant rot_black_magic_ench = ENCHANT_NONE;
     bool maintain_imp_scorch = false;

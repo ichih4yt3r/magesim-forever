@@ -17,7 +17,7 @@
 
     ChartJS.register(BarController, BarElement, CategoryScale, LinearScale);
 
-    const BIN_SIZE = 50;
+    const BIN_SIZE = 5;
 
     export default {
         components: { Bar },
@@ -50,7 +50,8 @@
                                 color: "rgba(255,255,255,0.05)",
                             },
                             ticks: {
-                                autoSkip: false,
+                                autoSkip: true,
+                                maxTicksLimit: 24,
                             },
                         },
                         y: {

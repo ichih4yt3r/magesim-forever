@@ -14,7 +14,7 @@ private:
     std::vector<bool> used_timings;
     const Timing* getNextTiming(const std::string& name) const;
     void useTiming(const Timing* timing);
-    double hotStreakRemaining(double t) const;
+    double heatingUpRemaining(double t) const;
     int arcaneWrathStackHold() const;
     int arcaneMissileStackHold() const;
     bool needsArcaneBlast(const State& state) const;
@@ -33,9 +33,9 @@ public:
     int combustion;
     int fingers_of_frost;
     bool heating_up;
-    int hotstreak_crits;
-    int hotstreak_hits;
-    int hotstreak_stacks;
+    int heating_up_crits;
+    int heating_up_hits;
+    int heating_up_stacks;
     double t_flamestrike;
     double t_flamestrike_dr;
     double t_scorch;
@@ -45,6 +45,8 @@ public:
     double t_mana_spent;
     double t_slammer;
     double fire_ward;
+    double frost_ward;
+    double ice_barrier_absorb;
     double mana_shield;
     int mana_ruby;
     int mana_jade;
@@ -189,6 +191,10 @@ public:
     int fireBlastRange() const;
 
     bool canFireBlast() const;
+
+    int iceLanceRange() const;
+
+    bool canIceLance() const;
 
     bool canBlast(const State& state) const;
 

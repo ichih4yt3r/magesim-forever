@@ -19,6 +19,7 @@ Player::Player(const Config& _config, const Stats& _stats, const Talents& _talen
     : Unit(_config, _stats), talents(_talents), glyphs(_glyphs)
 {
     base_mana = 933;
+    base_health = 1370;
     name = "Player";
     id = 1;
     used_timings.resize(_config.timings.size());
@@ -30,9 +31,9 @@ void Player::reset()
     combustion = 0;
     fingers_of_frost = 0;
     heating_up = false;
-    hotstreak_crits = 0;
-    hotstreak_hits = 0;
-    hotstreak_stacks = 0;
+    heating_up_crits = 0;
+    heating_up_hits = 0;
+    heating_up_stacks = 0;
     t_flamestrike = -20;
     t_flamestrike_dr = -20;
     t_scorch = -60;
@@ -42,6 +43,8 @@ void Player::reset()
     t_mana_spent = 0;
     t_slammer = -20;
     fire_ward = 0;
+    frost_ward = 0;
+    ice_barrier_absorb = 0;
     mana_shield = 0;
     mana_agate = 1;
     mana_citrine = 1;
@@ -130,7 +133,7 @@ double Player::manaPerSecond(const State& state) const
     mps += std::min(1.0, while_casting) * spi;
 
     if (hasBuff(buff::READ_LEY_LINE))
-        mps *= 2.0;
+        mps *= 1.5;
 
     return mps;
 }
@@ -158,11 +161,10 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
     if (spell->id == spell::FROSTBOLT && talents.empowered_frostbolt)
         t -= talents.empowered_frostbolt * 0.1;
 
-    if (spell->id == spell::FIREBALL && talents.imp_fireball)
-        t -= talents.imp_fireball * 0.1;
-
-    if (spell->id == spell::FROSTFIRE_BOLT && talents.imp_fireball)
-        t -= talents.imp_fireball * 0.1;
+    if ((spell->id == spell::FIREBALL || spell->id == spell::FROSTFIRE_BOLT || spell->id == spell::ARCANE_WRATH) && talents.imp_fireball) {
+        int ranks = talents.imp_fireball > 5 ? 5 : talents.imp_fireball;
+        t -= ranks * 0.1;
+    }
 
     if (spell->id == spell::FIREBALL && glyphs.fireball)
         t -= 0.15;
@@ -170,8 +172,8 @@ double Player::baseCastTime(std::shared_ptr<spell::Spell> spell) const
     if (spell->id == spell::ARCANE_MISSILES && hasBuff(buff::MISSILE_BARRAGE))
         t -= 2.5;
 
-    if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK))
-        t *= (1.0 - 0.25 * hotstreak_stacks);
+    if (spell->id == spell::PYROBLAST && hasBuff(buff::HEATING_UP))
+        t *= (1.0 - 0.25 * heating_up_stacks);
     
     if (spell->id == spell::FLAMESTRIKE && hasBuff(buff::FIRESTARTER))
         t = 0;
@@ -203,12 +205,10 @@ double Player::hitChance(std::shared_ptr<spell::Spell> spell, double dlevel) con
 {
     double hit = Unit::hitChance(spell, dlevel);
 
-    if (spell->school == SCHOOL_ARCANE && talents.arcane_focus)
-        hit += talents.arcane_focus * 1.0;
-
-    // Precision double dip for ffb
-    if (spell->id == spell::FROSTFIRE_BOLT && talents.precision)
-        hit += talents.precision;
+    if (talents.precision) {
+        int ranks = talents.precision > 3 ? 3 : talents.precision;
+        hit += ranks * 2.0;
+    }
 
     return hit;
 }
@@ -225,11 +225,12 @@ double Player::critChance(std::shared_ptr<spell::Spell> spell) const
 
     if (talents.incineration) {
         if (spell->id == spell::ARCANE_BLAST ||
-            spell->id == spell::CONE_OF_COLD ||
+            spell->id == spell::ICE_LANCE ||
             spell->id == spell::FIRE_BLAST ||
             spell->id == spell::SCORCH)
         {
-            crit += talents.incineration * 2.0;
+            int ranks = talents.incineration > 5 ? 5 : talents.incineration;
+            crit += ranks * 2.0;
         }
     }
 
@@ -245,8 +246,10 @@ double Player::critChance(std::shared_ptr<spell::Spell> spell) const
         }
     }
 
-    if (talents.critical_mass && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE))
-        crit += talents.critical_mass * 2.0;
+    if (talents.critical_mass && (spell->school == SCHOOL_FIRE || spell->school == SCHOOL_FROSTFIRE)) {
+        int ranks = talents.critical_mass > 3 ? 3 : talents.critical_mass;
+        crit += ranks * 2.0;
+    }
 
     if (spell->id == spell::FROSTFIRE_BOLT && glyphs.frostfire)
         crit += 2;
@@ -362,8 +365,12 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
         multi *= 1 + talents.arcane_instability * 0.01;
     if (talents.playing_with_fire)
         multi *= 1 + talents.playing_with_fire * 0.01;
-    if (talents.piercing_ice && (spell->school == SCHOOL_FROST || spell->school == SCHOOL_FROSTFIRE))
-        multi *= 1 + talents.piercing_ice * 0.02;
+    if (hasBuff(buff::ICE_BARRIER) && (spell->school == SCHOOL_FROST || spell->school == SCHOOL_FROSTFIRE)) {
+        double bonus = 0.15;
+        if (ice_barrier_absorb > 0)
+            bonus += 0.05;
+        multi *= 1.0 + bonus;
+    }
     if (talents.arctic_winds && (spell->school == SCHOOL_FROST || spell->school == SCHOOL_FROSTFIRE))
         multi *= 1 + talents.arctic_winds * 0.01;
     if (spell->id == spell::CONE_OF_COLD && talents.imp_cone_of_cold)
@@ -414,9 +421,9 @@ double Player::buffDmgMultiplier(std::shared_ptr<spell::Spell> spell, const Stat
 
     if (spell->id == spell::ICE_LANCE && isFrozen()) {
         if (glyphs.ice_lance)
-            multi *= 3;
+            multi *= 4;
         else
-            multi *= 2;
+            multi *= 3;
     }
 
     // Additive category
@@ -541,7 +548,7 @@ double Player::manaCostMod(std::shared_ptr<spell::Spell> spell, double mana_cost
         mod+= 0.3 * mana_cost;
 
     if (spell->id == spell::ARCANE_BLAST) {
-        double multi = 1.75 * buffStacks(buff::ARCANE_BLAST);
+        double multi = 1.0 * buffStacks(buff::ARCANE_BLAST);
         if (config.t5_2set)
             multi += 0.05;
         mod+= ceil(mana_cost * multi - 0.5);
@@ -653,12 +660,29 @@ void Player::swapWeapons()
     }
 }
 
+static double frostShieldMod(int ranks)
+{
+    if (ranks < 0)
+        ranks = 0;
+    if (ranks > 2)
+        ranks = 2;
+    return 1.0 + ranks * 0.10;
+}
+
 std::vector<action::Action> Player::onBuffGain(const State& state, std::shared_ptr<buff::Buff> buff)
 {
     auto actions = Unit::onBuffGain(state, buff);
 
     if (buff->id == buff::FIRE_WARD) {
         fire_ward = 1950.0 + getSpellPower(SCHOOL_FIRE) * 0.8053 * config.icc_buff;
+    }
+    else if (buff->id == buff::FROST_WARD) {
+        // Level 60 rank 5. Rank 1 is 178, plus 10% of Frost spell power.
+        frost_ward = (1004.0 + getSpellPower(SCHOOL_FROST) * 0.10) * frostShieldMod(talents.frost_warding);
+    }
+    else if (buff->id == buff::ICE_BARRIER) {
+        // Level 60 rank 4. Rank 1 is 493. Frost Warding adds 10% or 20%.
+        ice_barrier_absorb = 892.0 * frostShieldMod(talents.frost_warding);
     }
     else if (buff->id == buff::MANA_SHIELD) {
         mana_shield = 1330.0 + getSpellPower(SCHOOL_ARCANE) * 0.8053 * config.icc_buff;
@@ -673,17 +697,17 @@ std::vector<action::Action> Player::onBuffGain(const State& state, std::shared_p
         ab_streak++;
         int stacks = buffStacks(buff::ARCANE_BLAST);
         if (stacks > ab_sp_stacks) {
-            ab_spell_power += 0.15 * getIntellect() * (stacks - ab_sp_stacks);
+            ab_spell_power += 0.12 * getIntellect() * (stacks - ab_sp_stacks);
             ab_sp_stacks = stacks;
         }
     }
     else if (buff->id == buff::BRAIN_FREEZE) {
         t_brain_freeze = state.t;
     }
-    else if (buff->id == buff::HOT_STREAK) {
-        auto hs = buffs.find(buff::HOT_STREAK);
-        if (hs != buffs.end())
-            hs->second->t_refreshed = state.t;
+    else if (buff->id == buff::HEATING_UP) {
+        auto heating = buffs.find(buff::HEATING_UP);
+        if (heating != buffs.end())
+            heating->second->t_refreshed = state.t;
     }
     else if (buff->id == buff::INCANTERS_ABSORPTION) {
         t_incanters_absorption = state.t;
@@ -710,6 +734,10 @@ std::vector<action::Action> Player::onBuffExpire(const State& state, std::shared
         actions.push_back(buffExpireAction<buff::DeadlyPrecision>());
     if (buff->id == buff::FIRE_WARD)
         fire_ward = 0;
+    if (buff->id == buff::FROST_WARD)
+        frost_ward = 0;
+    if (buff->id == buff::ICE_BARRIER)
+        ice_barrier_absorb = 0;
     if (buff->id == buff::ARCANE_BLAST) {
         ab_streak = 0;
         ab_spell_power = 0;
@@ -717,8 +745,8 @@ std::vector<action::Action> Player::onBuffExpire(const State& state, std::shared
     }
     if (buff->id == buff::BRAIN_FREEZE)
         actions.push_back(cooldownAction<cooldown::BrainFreeze>());
-    if (buff->id == buff::HOT_STREAK)
-        hotstreak_stacks = 0;
+    if (buff->id == buff::HEATING_UP)
+        heating_up_stacks = 0;
 
     return actions;
 }
@@ -728,7 +756,7 @@ std::vector<action::Action> Player::onCastStartProc(const State& state, std::sha
     auto actions = Unit::onCastStartProc(state, spell, target);
 
     if (config.t10_2set) {
-        if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK))
+        if (spell->id == spell::PYROBLAST && hasBuff(buff::HEATING_UP))
             actions.push_back(buffAction<buff::PushingTheLimit>());
         else if ((spell->id == spell::FROSTFIRE_BOLT || spell->id == spell::FIREBALL) && hasBuff(buff::BRAIN_FREEZE) && spell->actual_cast_time == 0)
             actions.push_back(buffAction<buff::PushingTheLimit>());
@@ -780,10 +808,21 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         actions.push_back(cooldownExpireAction<cooldown::WaterElemental>());
         actions.push_back(cooldownExpireAction<cooldown::ConeOfCold>());
         actions.push_back(cooldownExpireAction<cooldown::DeepFreeze>());
+        actions.push_back(cooldownExpireAction<cooldown::FrostWard>());
+        actions.push_back(cooldownExpireAction<cooldown::IceBarrier>());
+        actions.push_back(cooldownExpireAction<cooldown::IceLance>());
     }
     if (spell->id == spell::FIRE_WARD) {
         actions.push_back(cooldownAction<cooldown::FireWard>());
         actions.push_back(buffAction<buff::FireWard>());
+    }
+    if (spell->id == spell::FROST_WARD) {
+        actions.push_back(cooldownAction<cooldown::FrostWard>());
+        actions.push_back(buffAction<buff::FrostWard>());
+    }
+    if (spell->id == spell::ICE_BARRIER) {
+        actions.push_back(cooldownAction<cooldown::IceBarrier>());
+        actions.push_back(buffAction<buff::IceBarrier>());
     }
     if (spell->id == spell::MANA_SHIELD) {
         actions.push_back(buffAction<buff::ManaShield>());
@@ -834,13 +873,15 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         if (config.t10_2set)
             pending_ptl = true;
     }
-    if (spell->id == spell::ICE_LANCE)
+    if (spell->id == spell::ICE_LANCE) {
         ice_lance_empowered = isFrozen();
+        actions.push_back(cooldownAction<cooldown::IceLance>());
+    }
 
-    if (spell->id == spell::PYROBLAST && hasBuff(buff::HOT_STREAK) && !presence) {
+    if (spell->id == spell::PYROBLAST && hasBuff(buff::HEATING_UP) && !presence) {
         // 20% chance - Sorta confirmed from elitist jerks
         if (!config.t8_4set || random<int>(0, 4) != 0)
-            actions.push_back(buffExpireAction<buff::HotStreak>());
+            actions.push_back(buffExpireAction<buff::HeatingUp>());
     }
 
     if (spell->id == spell::PYROBLAST)
@@ -1015,6 +1056,25 @@ std::vector<action::Action> Player::onSelfDmg(const State& state, double dmg, Sc
     }
     */
 
+    if (hasBuff(buff::FROST_WARD) && school == SCHOOL_FROST && talents.frost_warding > 0 && dmg > 0) {
+        int ranks = talents.frost_warding > 2 ? 2 : talents.frost_warding;
+        if (random<int>(0, 99) < ranks * 10) {
+            dmg = 0;
+        }
+    }
+
+    if (hasBuff(buff::FROST_WARD) && school == SCHOOL_FROST && dmg > 0) {
+        abs = dmg;
+        if (abs > frost_ward)
+            abs = frost_ward;
+        frost_ward -= abs;
+        absorb += abs;
+        dmg -= abs;
+
+        if (frost_ward <= 0)
+            actions.push_back(buffExpireAction<buff::FrostWard>());
+    }
+
     if (hasBuff(buff::FIRE_WARD) && school == SCHOOL_FIRE) {
         abs = dmg;
         if (abs > fire_ward)
@@ -1025,6 +1085,15 @@ std::vector<action::Action> Player::onSelfDmg(const State& state, double dmg, Sc
 
         if (fire_ward <= 0)
             actions.push_back(buffExpireAction<buff::FireWard>());
+    }
+
+    if (hasBuff(buff::ICE_BARRIER) && ice_barrier_absorb > 0 && dmg > 0) {
+        abs = dmg;
+        if (abs > ice_barrier_absorb)
+            abs = ice_barrier_absorb;
+        ice_barrier_absorb -= abs;
+        absorb += abs;
+        dmg -= abs;
     }
 
     if (hasBuff(buff::MANA_SHIELD)) {
@@ -1093,12 +1162,7 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
 
     if (instance.result != spell::MISS) {
         if (race == RACE_UNDEAD && !hasCooldown(cooldown::TOUCH_OF_THE_GRAVE) && instance.spell->can_proc && instance.spell->coeff > 0 && random<int>(0, 99) < 10) {
-            double coeff = instance.spell->coeff + spellCoeffMod(instance.spell);
-            if (instance.spell->channeling && instance.spell->ticks)
-                coeff /= instance.spell->ticks;
-            double drain = getSpellPower(instance.spell->school) * coeff;
-            if (config.player_health > 0)
-                drain = std::min(drain, config.player_health * 0.05);
+            double drain = maxHealth() * 0.05;
             if (drain > 0) {
                 auto action = spellAction<spell::TouchOfTheGrave>(target, drain);
                 action.cooldown = std::make_shared<cooldown::TouchOfTheGrave>();
@@ -1279,7 +1343,7 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
         }
     }
 
-    if (talents.hot_streak && !instance.spell->dot && instance.result != spell::MISS) {
+    if (talents.heating_up && !instance.spell->dot && instance.result != spell::MISS) {
         int charges = 0;
         if (instance.spell->id == spell::FIRE_BLAST)
             charges = instance.result == spell::CRIT ? 2 : 1;
@@ -1291,9 +1355,9 @@ std::vector<action::Action> Player::onSpellImpactProc(const State& state, const 
             charges = 1;
         }
 
-        for (int i = 0; i < charges && hotstreak_stacks < 3; ++i) {
-            hotstreak_stacks++;
-            actions.push_back(buffAction<buff::HotStreak>());
+        for (int i = 0; i < charges && heating_up_stacks < 3; ++i) {
+            heating_up_stacks++;
+            actions.push_back(buffAction<buff::HeatingUp>());
         }
     }
 
@@ -1974,6 +2038,12 @@ action::Action Player::useCooldown(const State& state)
     else if (talents.cold_snap && !hasCooldown(cooldown::COLD_SNAP) && useTimingIfPossible("cold_snap", state, true)) {
         return spellCooldownAction<spell::ColdSnap, cooldown::ColdSnap>();
     }
+    else if (talents.ice_barrier && !hasCooldown(cooldown::ICE_BARRIER) && useTimingIfPossible("ice_barrier", state, true)) {
+        return spellAction<spell::IceBarrier>();
+    }
+    else if (!hasCooldown(cooldown::FROST_WARD) && useTimingIfPossible("frost_ward", state, true)) {
+        return spellAction<spell::FrostWard>();
+    }
     else if (race == RACE_TROLL && !hasCooldown(cooldown::BERSERKING) && useTimingIfPossible("berserking", state)) {
         return buffCooldownAction<buff::Berserking, cooldown::Berserking>(true);
     }
@@ -2057,6 +2127,21 @@ bool Player::canFireBlast() const
     return !hasCooldown(cooldown::FIRE_BLAST) && config.distance <= fireBlastRange();
 }
 
+int Player::iceLanceRange() const
+{
+    int ranks = talents.arctic_reach;
+    if (ranks < 0)
+        ranks = 0;
+    if (ranks > 2)
+        ranks = 2;
+    return 30 + ranks * 3;
+}
+
+bool Player::canIceLance() const
+{
+    return talents.ice_lance && !hasCooldown(cooldown::ICE_LANCE) && config.distance <= iceLanceRange();
+}
+
 bool Player::canBlast(const State& state) const
 {
     // Lets assume we cant blast for 30+ seconds to save computing time
@@ -2073,7 +2158,7 @@ bool Player::canBlast(const State& state) const
     for (auto t = state.t; t <= state.duration; t += cast_time) {
         if (stacks < 4)
             stacks++;
-        cur_mana -= base_cost * 1.75 * stacks;
+        cur_mana -= base_cost * (1.0 + 1.0 * stacks);
         if (cur_mana < 0)
             return false;
     }
@@ -2143,7 +2228,7 @@ std::shared_ptr<spell::Spell> Player::fillerSpell(const State& state)
             spell = std::make_shared<spell::ArcaneBarrage>();
             break;
         case spell::ICE_LANCE:
-            if (!talents.ice_lance)
+            if (!canIceLance())
                 return nullptr;
             spell = std::make_shared<spell::IceLance>();
             break;
@@ -2210,11 +2295,17 @@ std::shared_ptr<spell::Spell> Player::spellFromId(int id) const
         case spell::FROSTBOLT:
             return std::make_shared<spell::Frostbolt>();
         case spell::FROST_BLAST:
-            return std::make_shared<spell::FrostBlast>();
+            return nullptr;
         case spell::FROSTFIRE_BOLT:
             return std::make_shared<spell::FrostfireBolt>();
         case spell::CONE_OF_COLD:
             return std::make_shared<spell::ConeOfCold>();
+        case spell::FROST_WARD:
+            return std::make_shared<spell::FrostWard>();
+        case spell::ICE_BARRIER:
+            if (!talents.ice_barrier)
+                return nullptr;
+            return std::make_shared<spell::IceBarrier>();
         default:
             return nullptr;
     }
@@ -2326,13 +2417,13 @@ action::Action Player::preCombat(const State& state)
     return { action::TYPE_NONE };
 }
 
-double Player::hotStreakRemaining(double t) const
+double Player::heatingUpRemaining(double t) const
 {
-    auto hs = buffs.find(buff::HOT_STREAK);
-    if (hs == buffs.end())
+    auto heating = buffs.find(buff::HEATING_UP);
+    if (heating == buffs.end())
         return 0;
 
-    return hs->second->duration - (t - hs->second->t_refreshed);
+    return heating->second->duration - (t - heating->second->t_refreshed);
 }
 
 bool Player::shouldMaintainImpScorch(const State& state, std::shared_ptr<target::Target> target) const
@@ -2416,21 +2507,21 @@ action::Action Player::nextAction(const State& state)
     // Fire rotations
     if (config.rotation == ROTATION_ST_FIRE || config.rotation == ROTATION_ST_FROSTFIRE || config.rotation == ROTATION_ST_FIRE_SC) {
 
-        bool hot_streak = canReactTo(buff::HOT_STREAK, state.t) && talents.pyroblast;
+        bool has_heating_up = canReactTo(buff::HEATING_UP, state.t) && talents.pyroblast;
         bool multi_target = config.targets > 1;
         auto pyroblast = std::make_shared<spell::Pyroblast>();
         bool pyro_will_land = travelTime(pyroblast) <= state.duration - state.t;
-        int pyro_at = config.rot_hot_streak_stacks;
+        int pyro_at = config.rot_heating_up_stacks;
         if (pyro_at < 1)
             pyro_at = 1;
         else if (pyro_at > 3)
             pyro_at = 3;
-        double hs_remain = hotStreakRemaining(state.t);
+        double heating_remain = heatingUpRemaining(state.t);
         double pyro_cast = castTime(pyroblast);
-        bool stacks_ready = hot_streak && pyro_will_land && hotstreak_stacks >= pyro_at;
+        bool stacks_ready = has_heating_up && pyro_will_land && heating_up_stacks >= pyro_at;
         
-        // Start below the stack goal only when this Pyroblast would not finish before Hot Streak falls off.
-        bool pyro_would_miss_buff = hot_streak && pyro_will_land && hotstreak_stacks < pyro_at && hs_remain <= pyro_cast;
+        // Start below the stack goal only when this Pyroblast would not finish before Heating Up falls off.
+        bool pyro_would_miss_buff = has_heating_up && pyro_will_land && heating_up_stacks < pyro_at && heating_remain <= pyro_cast;
 
         // A long Pyroblast can run out the 30s debuff. Refresh first when this cast would.
         if (config.maintain_imp_scorch && talents.imp_scorch && (pyro_would_miss_buff || stacks_ready)) {
@@ -2502,7 +2593,7 @@ action::Action Player::nextAction(const State& state)
             }
         }
 
-        if (config.rot_fire_blast_hot_streak && talents.hot_streak && hotstreak_stacks < pyro_at && canFireBlast())
+        if (config.rot_fire_blast_heating_up && talents.heating_up && heating_up_stacks < pyro_at && canFireBlast())
             return spellAction<spell::FireBlast>(target);
 
         return spellAction(main_spell, target);
@@ -2591,7 +2682,7 @@ action::Action Player::nextAction(const State& state)
                     return spellAction<spell::Fireball>(target);
                 return spellAction<spell::FrostfireBolt>(target);
             }
-            else if (config.rot_ice_lance) {
+            else if (config.rot_ice_lance && canIceLance()) {
                 return spellAction<spell::IceLance>(target);
             }
         }
@@ -2607,8 +2698,17 @@ action::Action Player::nextAction(const State& state)
             bool expire_before_bolt = stacks > 0 && remain <= castTime(bolt) + travelTime(bolt);
             if ((stacks >= 5 || expire_before_bolt) && !hasCooldown(cooldown::CONE_OF_COLD))
                 return spellAction<spell::ConeOfCold>(target);
-            if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND))
-                return spellAction<spell::FrostBlast>(target);
+            if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND)) {
+                if (canIceLance())
+                    return spellAction<spell::IceLance>(target);
+                if (canFireBlast())
+                    return spellAction<spell::FireBlast>(target);
+                action::Action action{ action::TYPE_WAIT };
+                action.value = state.interruptedFor();
+                if (action.value > 0.1)
+                    action.value = 0.1;
+                return action;
+            }
             return spellAction(bolt, target);
         }
         else if (state.isMoving() && !hasBuff(buff::PRESENCE_OF_MIND)) {

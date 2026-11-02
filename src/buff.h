@@ -26,7 +26,7 @@ enum ID : int
     READ_LEY_LINE = 100001,
     EUREKA = 100002,
     MISSILE_BARRAGE = 44401,
-    HOT_STREAK = 48108,
+    HEATING_UP = 48108,
     FIRESTARTER = 54741,
     MOLTEN_FURY = 31680,
     BRAIN_FREEZE = 57761,
@@ -34,6 +34,8 @@ enum ID : int
     GHOST_FINGERS = 4454411,
     FOCUS_MAGIC = 54648,
     FIRE_WARD = 43010,
+    FROST_WARD = 28609,
+    ICE_BARRIER = 13033,
     MANA_SHIELD = 43020,
     INCANTERS_ABSORPTION = 44413,
     HYPERSPEED_ACCELERATION = 54758,
@@ -253,11 +255,11 @@ public:
     MissileBarrage();
 };
 
-class HotStreak : public Buff
+class HeatingUp : public Buff
 {
 
 public:
-    HotStreak();
+    HeatingUp();
 };
 
 class Firestarter : public Buff
@@ -288,6 +290,13 @@ public:
     GhostFingers();
 };
 
+class IceBarrier : public Buff
+{
+
+public:
+    IceBarrier();
+};
+
 class FocusMagic : public Buff
 {
 
@@ -300,6 +309,13 @@ class FireWard : public Buff
 
 public:
     FireWard();
+};
+
+class FrostWard : public Buff
+{
+
+public:
+    FrostWard();
 };
 
 class ManaShield : public Buff

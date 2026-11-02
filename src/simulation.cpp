@@ -41,7 +41,7 @@ SimulationsResult Simulation::runMultiple(int iterations)
     logging = iterations == 1;
     logging_spells = true;
 
-    constexpr double bin_size = 50;
+    constexpr double bin_size = 5;
 
     std::unordered_map<spell::ID, SpellStats> spells;
     std::unordered_map<int, int> histogram;
@@ -1461,7 +1461,7 @@ double Simulation::spellDmg(const std::shared_ptr<unit::Unit> unit, std::shared_
         if (spell->id == spell::CONE_OF_COLD && target->hasDebuff(debuff::WINTERS_CHILL)) {
             int stacks = target->debuffStacks(debuff::WINTERS_CHILL);
             dmg += sp * 0.07 * stacks;
-            dmg *= 1.0 + 0.05 * stacks;
+            dmg *= 1.0 + 0.20 * stacks;
         }
     }
 
