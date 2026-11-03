@@ -778,8 +778,17 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
     bool is_harmful = spell->max_dmg > 0;
 
     // Cooldowns
-    if (spell->id == spell::FIRE_BLAST)
-        actions.push_back(cooldownAction<cooldown::FireBlast>(talents.imp_fire_blast));
+    if (spell->id == spell::FIRE_BLAST || spell->id == spell::ICE_LANCE) {
+        // Fire Blast and Ice Lance share a cooldown. The spell just cast sets the length for both.
+        auto fire_blast = std::make_shared<cooldown::FireBlast>(talents.imp_fire_blast);
+        auto ice_lance = std::make_shared<cooldown::IceLance>();
+        if (spell->id == spell::FIRE_BLAST)
+            ice_lance->duration = fire_blast->duration;
+        else
+            fire_blast->duration = ice_lance->duration;
+        actions.push_back(cooldownAction(fire_blast));
+        actions.push_back(cooldownAction(ice_lance));
+    }
     if (spell->id == spell::ARCANE_WRATH) {
         arcane_wrath_casts++;
         actions.push_back(cooldownAction<cooldown::ArcaneWrath>());
@@ -811,6 +820,7 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         actions.push_back(cooldownExpireAction<cooldown::FrostWard>());
         actions.push_back(cooldownExpireAction<cooldown::IceBarrier>());
         actions.push_back(cooldownExpireAction<cooldown::IceLance>());
+        actions.push_back(cooldownExpireAction<cooldown::FireBlast>());
     }
     if (spell->id == spell::FIRE_WARD) {
         actions.push_back(cooldownAction<cooldown::FireWard>());
@@ -873,10 +883,8 @@ std::vector<action::Action> Player::onCastSuccessProc(const State& state, std::s
         if (config.t10_2set)
             pending_ptl = true;
     }
-    if (spell->id == spell::ICE_LANCE) {
+    if (spell->id == spell::ICE_LANCE)
         ice_lance_empowered = isFrozen();
-        actions.push_back(cooldownAction<cooldown::IceLance>());
-    }
 
     if (spell->id == spell::PYROBLAST && hasBuff(buff::HEATING_UP) && !presence) {
         // 20% chance - Sorta confirmed from elitist jerks

@@ -681,6 +681,7 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th></th>
                                         <th>Time</th>
                                         <th>Mana</th>
                                         <th>DPS</th>
@@ -688,12 +689,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="log in activeLog" :class="['type-'+log.type]">
-                                        <td>{{ formatTime(log.t) }}</td>
-                                        <td>{{ round(log.mana) }} ({{ round(log.mana_percent) }}%)</td>
-                                        <td>{{ ((log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0)) ? round(log.dmg / (log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0))) : "0") }}</td>
-                                        <td>{{ log.text }}</td>
-                                    </tr>
+                                    <template v-for="group in activeLog" :key="group.id">
+                                        <tr v-for="(log, i) in logEntries(group)" :key="group.id + '-' + i" :class="logRowClass(group, log, i)">
+                                            <td class="log-rail" :title="group.entries.length > 1 ? group.entries.length + ' events at ' + group.key : ''" @click="toggleLogGroup(group)">
+                                                <span v-if="group.entries.length > 1 && !log_collapsed[group.key]" class="mark"></span>
+                                                <span v-if="i === 0 && group.entries.length > 1 && log_collapsed[group.key]" class="count">{{ group.entries.length }}</span>
+                                            </td>
+                                            <td class="log-time" @click="toggleLogGroup(group)">{{ i === 0 ? group.key : '' }}</td>
+                                            <td>{{ round(log.mana) }} ({{ round(log.mana_percent) }}%)</td>
+                                            <td>{{ ((log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0)) ? round(log.dmg / (log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0))) : "0") }}</td>
+                                            <td>
+                                                {{ log.text }}
+                                                <span v-if="i === 0 && group.entries.length > 1 && log_collapsed[group.key]" class="log-more" @click="toggleLogGroup(group)">+{{ group.entries.length - 1 }} more</span>
+                                            </td>
+                                        </tr>
+                                    </template>
                                 </tbody>
                             </table>
                         </div>
@@ -2524,6 +2534,7 @@
                     "10": true,
                 },
                 log_filter_player: false,
+                log_collapsed: {},
                 splitview: splitview,
                 talent_map: [[],[],[]],
                 default_config: default_config,
@@ -2797,7 +2808,17 @@
 
                 log = log.filter(l => this.log_filter[l.type]);
 
-                return log;
+                var groups = [];
+                for (var i = 0; i < log.length; i++) {
+                    var key = this.formatTime(log[i].t);
+                    var last = groups.length ? groups[groups.length - 1] : null;
+                    if (!last || last.key !== key)
+                        groups.push({ id: groups.length, key: key, entries: [log[i]] });
+                    else
+                        last.entries.push(log[i]);
+                }
+
+                return groups;
             },
 
             hasComparisons() {
@@ -3705,6 +3726,7 @@
             },
 
             prepare() {
+                this.log_collapsed = {};
                 this.fillEmptyFields();
                 this.sortTimings();
                 this.saveCurrentProfile();
@@ -5213,6 +5235,32 @@
                     return null;
 
                 return item.sockets.join(" / ");
+            },
+
+            logEntries(group) {
+                if (group.entries.length > 1 && this.log_collapsed[group.key])
+                    return [group.entries[0]];
+                return group.entries;
+            },
+
+            logRowClass(group, log, i) {
+                var multi = group.entries.length > 1;
+                var collapsed = multi && !!this.log_collapsed[group.key];
+                return [
+                    "type-" + log.type,
+                    {
+                        "log-multi": multi && !collapsed,
+                        "log-first": multi && !collapsed && i === 0,
+                        "log-last": multi && !collapsed && i === group.entries.length - 1,
+                        "log-collapsed": collapsed,
+                    }
+                ];
+            },
+
+            toggleLogGroup(group) {
+                if (group.entries.length < 2)
+                    return;
+                this.log_collapsed[group.key] = !this.log_collapsed[group.key];
             },
 
             formatTime(s) {

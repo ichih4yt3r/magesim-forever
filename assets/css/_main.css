@@ -1292,35 +1292,111 @@ table {
 
         table {
             th, td {
-                &:nth-child(-n+3) {
+                &:nth-child(-n+4) {
                     width: 1px;
                     white-space: nowrap;
                 }
             }
 
             td {
-                &:nth-child(1) {
+                &:nth-child(2) {
                     color: #ccc;
                 }
-                &:nth-child(2) {
+                &:nth-child(3) {
                     color: var(--color-primary);
                 }
             }
 
-            tr.type-4 td:nth-child(4) {
+            td.log-rail {
+                position: relative;
+                width: 22px;
+                padding: 4px 6px;
+                text-align: center;
+
+                .mark {
+                    position: absolute;
+                    left: 9px;
+                    top: -1px;
+                    bottom: -1px;
+                    width: 2px;
+                    background: #5b8def;
+                }
+
+                .count {
+                    position: relative;
+                    z-index: 1;
+                    display: inline-block;
+                    min-width: 14px;
+                    padding: 0 4px;
+                    border-radius: 8px;
+                    background: #06f;
+                    color: #fff;
+                    font-size: 10px;
+                    line-height: 14px;
+                    text-align: center;
+                }
+            }
+
+            tr.log-multi.log-first td.log-rail .mark {
+                top: 50%;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 8px;
+                    height: 2px;
+                    background: inherit;
+                }
+            }
+
+            tr.log-multi.log-last td.log-rail .mark {
+                bottom: 50%;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 8px;
+                    height: 2px;
+                    background: inherit;
+                }
+            }
+
+            tr.log-multi td.log-rail,
+            tr.log-collapsed td.log-rail,
+            tr.log-multi td.log-time,
+            tr.log-collapsed td.log-time,
+            .log-more {
+                cursor: pointer;
+            }
+
+            tr.log-multi td.log-rail:hover .mark {
+                background: #9cf;
+            }
+
+            .log-more {
+                margin-left: 8px;
+                color: #8ab4ff;
+                font-size: 12px;
+            }
+
+            tr.type-4 td:nth-child(5) {
                 color: #807fa2;
             }
-            tr.type-5 td:nth-child(4) {
+            tr.type-5 td:nth-child(5) {
                 color: #bbe8ba;
             }
-            tr.type-6 td:nth-child(4) {
+            tr.type-6 td:nth-child(5) {
                 color: #aaa;
             }
-            tr.type-8 td:nth-child(4),
-            tr.type-9 td:nth-child(4) {
+            tr.type-8 td:nth-child(5),
+            tr.type-9 td:nth-child(5) {
                 color: #b88;
             }
-            tr.type-10 td:nth-child(4) {
+            tr.type-10 td:nth-child(5) {
                 color: #fb2;
             }
         }

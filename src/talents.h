@@ -117,7 +117,7 @@ struct Talents
 
 
     // NEW
-    int ice_lance = 0; // Instant frost damage, 8s cooldown. Frozen targets take x3 damage (x4 with the glyph).
+    int ice_lance = 0; // Instant frost damage, 8s cooldown shared with Fire Blast. Frozen targets take x3 damage (x4 with the glyph).
     int fingers_of_frost = 0;
      
 
