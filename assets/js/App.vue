@@ -691,11 +691,11 @@
                                 <tbody>
                                     <template v-for="group in activeLog" :key="group.id">
                                         <tr v-for="(log, i) in logEntries(group)" :key="group.id + '-' + i" :class="logRowClass(group, log, i)">
-                                            <td class="log-rail" :title="group.entries.length > 1 ? group.entries.length + ' events at ' + group.key : ''" @click="toggleLogGroup(group)">
+                                            <td class="log-rail" :title="logGroupTitle(group)" @click="toggleLogGroup(group)">
                                                 <span v-if="group.entries.length > 1 && !log_collapsed[group.key]" class="mark"></span>
                                                 <span v-if="i === 0 && group.entries.length > 1 && log_collapsed[group.key]" class="count">{{ group.entries.length }}</span>
                                             </td>
-                                            <td class="log-time" @click="toggleLogGroup(group)">{{ i === 0 ? group.key : '' }}</td>
+                                            <td class="log-time" @click="toggleLogGroup(group)">{{ group.pre || i === 0 ? formatTime(log.t) : '' }}</td>
                                             <td>{{ round(log.mana) }} ({{ round(log.mana_percent) }}%)</td>
                                             <td>{{ ((log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0)) ? round(log.dmg / (log.t + (result.log[0].t < 0 ? result.log[0].t * -1 : 0))) : "0") }}</td>
                                             <td>
@@ -2809,11 +2809,21 @@
                 log = log.filter(l => this.log_filter[l.type]);
 
                 var groups = [];
+                var pre = null;
                 for (var i = 0; i < log.length; i++) {
+                    if (log[i].t < 0) {
+                        if (!pre) {
+                            pre = { id: groups.length, key: "pre", pre: true, entries: [] };
+                            groups.push(pre);
+                        }
+                        pre.entries.push(log[i]);
+                        continue;
+                    }
+
                     var key = this.formatTime(log[i].t);
                     var last = groups.length ? groups[groups.length - 1] : null;
-                    if (!last || last.key !== key)
-                        groups.push({ id: groups.length, key: key, entries: [log[i]] });
+                    if (!last || last.pre || last.key !== key)
+                        groups.push({ id: groups.length, key: key, pre: false, entries: [log[i]] });
                     else
                         last.entries.push(log[i]);
                 }
@@ -5261,6 +5271,14 @@
                 if (group.entries.length < 2)
                     return;
                 this.log_collapsed[group.key] = !this.log_collapsed[group.key];
+            },
+
+            logGroupTitle(group) {
+                if (group.entries.length < 2)
+                    return "";
+                if (group.pre)
+                    return group.entries.length + " events before pull";
+                return group.entries.length + " events at " + group.key;
             },
 
             formatTime(s) {
